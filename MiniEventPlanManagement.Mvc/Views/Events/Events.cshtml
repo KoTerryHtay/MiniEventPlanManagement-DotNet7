@@ -1,0 +1,37 @@
+﻿@model List<TblEvent>
+@{
+    ViewData["Title"] = "All Events";
+}
+
+<h1>Product Category</h1>
+
+<a href="/events/new" class="btn btn-outline-success">Create New Event</a>
+
+@*  public int Id { get; set; }
+    public string Name { get; set; } = null!;
+    public DateTime EventDate { get; set; } *@
+
+<table class="table table-responsive">
+    <thead>
+        <tr>
+            <th>Event Id</th>
+            <th>Event Name</th>
+            <th>Event Date</th>
+            <th>Details</th>
+        </tr>
+    </thead>
+    <tbody>
+        @for (int i = 0; i < Model.Count; i++)
+        {
+            var eventData = Model[i];
+            <tr>
+                <td>@eventData.Id</td>
+                <td>@eventData.Name</td>
+                <td>@eventData.EventDate</td>
+                <td>
+                    <a href="/events/@eventData.Id">Detail</a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

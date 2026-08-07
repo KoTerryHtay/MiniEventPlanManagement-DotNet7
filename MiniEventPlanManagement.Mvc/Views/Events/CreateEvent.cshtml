@@ -1,0 +1,50 @@
+﻿@{
+    ViewData["Title"] = "Create Event";
+}
+@* public string Name { get; set; } public DateTime EventDate { get; set; } *@
+<div class="mb-3">
+    <label for="name" class="form-label">Event Name</label>
+    <input type="text" class="form-control" id="name" />
+</div>
+<div class="mb-3">
+    <label for="datetime" class="form-label">Event Date</label>
+    <input type="datetime-local" class="form-control" id="datetime" />
+</div>
+<button type="button" id="btnCancel" class="btn btn-secondary">
+    Cancel
+</button>
+<button type="button" id="btnSave" class="btn btn-success">Create</button>
+
+@section scripts {
+    <script>
+        $("#btnSave").click(function(){
+            const name = $("#name").val();
+            const datetime = $("#datetime").val();
+            console.log("name >>>",name);
+            console.log("datetime >>>",datetime);
+
+            $.ajax({
+                url: "/api/events/create",
+                type: "POST",
+                data: {
+                    Name: name,
+                    EventDate: datetime,
+                },
+                success: function(response){
+                   // {IsSuccess: true, Message: "Events Created Successfully"}
+                    console.log(response);
+                    if(!response.IsSuccess){
+                        alert(response.Message);
+                        return;
+                    }
+
+                    alert(response.Message);
+                    location.href = "/events";
+                },
+                error: function(error){
+                    console.log(error);
+                }
+            });
+        });
+    </script>
+}

@@ -47,7 +47,7 @@ public class EventService
         return model;
     }
 
-    public TblEvent CreateSale(TblEvent data)
+    public TblEvent CreateEvent(TblEvent data)
     {
         _db.TblEvents.Add(data);
         _db.SaveChanges();
