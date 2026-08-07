@@ -15,6 +15,8 @@ public partial class AppDbContext : DbContext
     {
     }
 
+    public virtual DbSet<TblEvent> TblEvents { get; set; }
+
     public virtual DbSet<TblGuest> TblGuests { get; set; }
 
     public virtual DbSet<TblTable> TblTables { get; set; }
@@ -28,13 +30,29 @@ public partial class AppDbContext : DbContext
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        modelBuilder.Entity<TblEvent>(entity =>
+        {
+            entity.ToTable("Tbl_Event");
+
+            entity.Property(e => e.CreatedDate)
+                .HasDefaultValueSql("(getdate())")
+                .HasColumnType("datetime");
+            entity.Property(e => e.EventDate).HasColumnType("datetime");
+            entity.Property(e => e.Name).HasMaxLength(50);
+
+            entity.HasOne(d => d.User).WithMany(p => p.TblEvents)
+                .HasForeignKey(d => d.UserId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_Tbl_Event_Tbl_User");
+        });
+
         modelBuilder.Entity<TblGuest>(entity =>
         {
             entity.ToTable("Tbl_Guest");
 
-            entity.Property(e => e.CheckedInAt)
-                .HasDefaultValueSql("(getdate())")
-                .HasColumnType("datetime");
+            entity.HasIndex(e => new { e.EventId, e.TableId }, "IX_Tbl_Guest").IsUnique();
+
+            entity.Property(e => e.CheckedInAt).HasColumnType("datetime");
             entity.Property(e => e.FullName).HasMaxLength(50);
             entity.Property(e => e.Phone).HasMaxLength(50);
             entity.Property(e => e.RsvpStatus)
@@ -42,20 +60,23 @@ public partial class AppDbContext : DbContext
                 .HasDefaultValueSql("(N'Pending')")
                 .IsFixedLength();
 
-            entity.HasOne(d => d.Table).WithMany(p => p.TblGuests)
-                .HasForeignKey(d => d.TableId)
+            entity.HasOne(d => d.Event).WithMany(p => p.TblGuests)
+                .HasForeignKey(d => d.EventId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK_Tbl_Guest_Tbl_Table");
+                .HasConstraintName("FK_Tbl_Guest_Tbl_Event");
         });
 
         modelBuilder.Entity<TblTable>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK_Tbl_Tables");
-
             entity.ToTable("Tbl_Table");
 
             entity.Property(e => e.Capacity).HasDefaultValueSql("((4))");
             entity.Property(e => e.Name).HasMaxLength(50);
+
+            entity.HasOne(d => d.Event).WithMany(p => p.TblTables)
+                .HasForeignKey(d => d.EventId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_Tbl_Table_Tbl_Event");
         });
 
         modelBuilder.Entity<TblUser>(entity =>

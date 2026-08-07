@@ -11,5 +11,7 @@ public partial class TblTable
 
     public int Capacity { get; set; }
 
-    public virtual ICollection<TblGuest> TblGuests { get; set; } = new List<TblGuest>();
+    public int EventId { get; set; }
+
+    public virtual TblEvent Event { get; set; } = null!;
 }

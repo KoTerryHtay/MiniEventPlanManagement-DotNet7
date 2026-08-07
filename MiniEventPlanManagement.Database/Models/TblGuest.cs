@@ -15,9 +15,11 @@ public partial class TblGuest
 
     public bool IsCheckdIn { get; set; }
 
-    public DateTime CheckedInAt { get; set; }
+    public DateTime? CheckedInAt { get; set; }
 
     public int TableId { get; set; }
 
-    public virtual TblTable Table { get; set; } = null!;
+    public int EventId { get; set; }
+
+    public virtual TblEvent Event { get; set; } = null!;
 }

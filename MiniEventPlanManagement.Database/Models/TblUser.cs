@@ -12,4 +12,6 @@ public partial class TblUser
     public string Email { get; set; } = null!;
 
     public string Password { get; set; } = null!;
+
+    public virtual ICollection<TblEvent> TblEvents { get; set; } = new List<TblEvent>();
 }
