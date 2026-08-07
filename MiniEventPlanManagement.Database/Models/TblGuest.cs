@@ -23,3 +23,11 @@ public partial class TblGuest
 
     public virtual TblEvent Event { get; set; } = null!;
 }
+
+enum RSVP
+{
+    Pending,
+    Confirmed,
+    Declined,
+    Waitlist,
+}

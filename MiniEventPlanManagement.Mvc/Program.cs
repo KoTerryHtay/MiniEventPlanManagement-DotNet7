@@ -1,5 +1,9 @@
 using Microsoft.EntityFrameworkCore;
 using MiniEventPlanManagement.Database.Models;
+using MiniEventPlanManagement.Domain.Features.Event;
+using MiniEventPlanManagement.Domain.Features.Guest;
+using MiniEventPlanManagement.Domain.Features.Table;
+using MiniEventPlanManagement.Domain.Features.User;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -15,6 +19,11 @@ builder.Services.AddDbContext<AppDbContext>(opt =>
 {
     opt.UseSqlServer(builder.Configuration.GetConnectionString("DbConnection"));
 }, ServiceLifetime.Transient, ServiceLifetime.Transient);
+
+builder.Services.AddScoped<UserService>();
+builder.Services.AddScoped<EventService>();
+builder.Services.AddScoped<TableService>();
+builder.Services.AddScoped<GuestService>();
 
 var app = builder.Build();
 
