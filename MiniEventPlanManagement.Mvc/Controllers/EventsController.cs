@@ -53,6 +53,24 @@ public class EventsController : Controller
     [Route("/events/{id:int}")]
     public IActionResult EventDetail(int id)
     {
+
         return View("EventDetail", id);
+    }
+
+    [Route("/api/events/{id:int}")]
+    public IActionResult Detail(int id)
+    {
+        MessageModel model;
+        var data = _eventService.GetEventById(id);
+        if (data.Data is null)
+        {
+            model = new MessageModel(false, "Event not found");
+            goto Results;
+        }
+
+        model = new MessageModel(true, "Get Event successfully", data.Data);
+
+    Results:
+        return Json(model);
     }
 }

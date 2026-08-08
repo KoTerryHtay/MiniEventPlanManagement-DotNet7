@@ -1,0 +1,108 @@
+﻿@model int
+@{
+    ViewData["Title"] = "Event Details";
+}
+
+<h1>Event Name @Model</h1>
+
+@* {
+    public int Id { get; set; }
+
+    public string Name { get; set; } = null!;
+
+    public DateTime EventDate { get; set; }
+
+    public DateTime CreatedDate { get; set; }
+
+    public int UserId { get; set; }
+
+    public virtual ICollection<TblGuest>
+    TblGuests { get; set; } = new List<TblGuest>
+        ();
+
+        public virtual ICollection<TblTable>
+            TblTables { get; set; } = new List<TblTable>
+                ();
+
+                public virtual TblUser User { get; set; } = null!;
+                } *@
+
+<table class="table table-responsive">
+    <thead>
+        <tr>
+            <th></th>
+            <th>No.</th>
+            <th>Event Name</th>
+            <th>Event Date</th>
+            <th>CreatedDate</th>
+            @* <th>Table Count</th> *@
+        </tr>
+    </thead>
+    <tbody id="tblDataTable">
+    </tbody>
+</table>
+
+@section scripts {
+    <script>
+        $(document).ready(function(){
+            loadData();
+        });
+
+        function loadData(){
+            $.ajax({
+                url: "/api/events/@Model/",
+                type: "GET",
+                success: function(response){
+                    console.log(response);
+
+                    if(!response.Data){
+                        $("#tblDataTable").empty();
+                        let tr=`
+                        <tr>
+                            <td></td>
+                            <td>No Event found</td>
+                        </tr>`;
+                        $("#tblDataTable").append(tr);
+                        return;
+                    }
+
+                // {
+                //     "Id": 2,
+                //     "Name": "JSM_Hackathon",
+                //     "EventDate": "2026-08-07T21:18:05.807",
+                //     "CreatedDate": "2026-08-07T21:18:05.967",
+                //     "UserId": 1,
+                //     "TblGuests": [],
+                //     "TblTables": [],
+                //     "User": null
+                // }
+
+                    const data = response.Data;
+                    console.log("data >>>",data);
+
+                    // $("#tblDataTable").empty();
+                    // for(let i = 0; i < data.length; i++ ){
+
+                        // let eventData = data[i];
+                        // console.log("eventData >>>",eventData);
+                        let tr=`<tr>
+                            <td>
+                               <a href="/events/${data.Id}/edit" class="btn btn-warning">Edit</a>
+                            </td>
+                            <td>${data.Id}</td>
+                            <td>${data.Name}</td>
+                            <td>${data.EventDate}</td>
+                            <td>${data.CreatedDate}</td>
+                        </tr>`;
+                        $("#tblDataTable").append(tr);
+                    // }
+
+                },
+                error: function(error){
+                    console.log(error);
+                }
+            });
+        }
+
+    </script>
+}
