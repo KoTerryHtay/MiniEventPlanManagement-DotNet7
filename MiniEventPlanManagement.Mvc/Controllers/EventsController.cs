@@ -37,7 +37,7 @@ public class EventsController : Controller
             _eventService.CreateEvent(new TblEvent
             {
                 Name = requestModel.Name,
-                EventDate = DateTime.Now,
+                EventDate = requestModel.EventDate,
                 UserId = 1
             });
             model = new MessageModel(true, "Event Created Successfully");
