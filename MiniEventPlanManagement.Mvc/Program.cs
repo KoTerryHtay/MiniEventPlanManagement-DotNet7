@@ -1,9 +1,11 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using MiniEventPlanManagement.Database.Models;
 using MiniEventPlanManagement.Domain.Features.Event;
 using MiniEventPlanManagement.Domain.Features.Guest;
 using MiniEventPlanManagement.Domain.Features.Table;
 using MiniEventPlanManagement.Domain.Features.User;
+using MiniEventPlanManagement.Domain.Mappings;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -24,6 +26,8 @@ builder.Services.AddScoped<UserService>();
 builder.Services.AddScoped<EventService>();
 builder.Services.AddScoped<TableService>();
 builder.Services.AddScoped<GuestService>();
+
+builder.Services.AddAutoMapper(typeof(MappingProfile));
 
 var app = builder.Build();
 

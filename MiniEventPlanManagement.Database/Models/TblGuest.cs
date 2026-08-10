@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Text.Json.Serialization;
 
 namespace MiniEventPlanManagement.Database.Models;
 
@@ -21,13 +22,9 @@ public partial class TblGuest
 
     public int EventId { get; set; }
 
+    //[JsonIgnore]
     public virtual TblEvent Event { get; set; } = null!;
-}
 
-enum RSVP
-{
-    Pending,
-    Confirmed,
-    Declined,
-    Waitlist,
+    //[JsonIgnore]
+    public virtual TblTable Table { get; set; } = null!;
 }
