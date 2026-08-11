@@ -1,0 +1,9 @@
+﻿@model MiniEventPlanManagement.Domain.Models.Dto.Event.EventDto
+
+<div class="mb-4">
+    <h2>@Model.Name</h2>
+    <p class="text-muted">
+        Event Date: @Model.EventDate.ToString("MMMM dd, yyyy hh:mm tt") |
+        Created: @Model.CreatedDate.ToString("MMMM dd, yyyy hh:mm tt")
+    </p>
+</div>

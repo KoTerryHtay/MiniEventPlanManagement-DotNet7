@@ -47,6 +47,50 @@ public class GuestService
         return model;
     }
 
+    public Result<List<TblGuest>> GetGuestsByTableId(int tableId)
+    {
+
+        Result<List<TblGuest>> model;
+
+        var data = _db.TblGuests
+            .AsNoTracking()
+            .Where(x => x.TableId == tableId)
+            .ToList();
+
+        if (data is null)
+        {
+            model = Result<List<TblGuest>>.NotFound();
+            goto Result;
+        }
+
+        model = Result<List<TblGuest>>.Success(data);
+
+    Result:
+        return model;
+    }
+
+    public Result<List<TblGuest>> GetGuestsNotInTableByTableId(int tableId)
+    {
+
+        Result<List<TblGuest>> model;
+
+        var data = _db.TblGuests
+            .AsNoTracking()
+            .Where(x => x.TableId != tableId)
+            .ToList();
+
+        if (data is null)
+        {
+            model = Result<List<TblGuest>>.NotFound();
+            goto Result;
+        }
+
+        model = Result<List<TblGuest>>.Success(data);
+
+    Result:
+        return model;
+    }
+
     public TblGuest CreateGuest(TblGuest data)
     {
         _db.TblGuests.Add(data);
@@ -125,6 +169,30 @@ public class GuestService
         // FullName Phone RsvpStatus IsCheckdIn CheckedInAt TableId EventId
         item.IsCheckdIn = check;
         item.CheckedInAt = DateTime.Now;
+
+        _db.Entry(item).State = EntityState.Modified;
+        _db.SaveChanges();
+
+        model = Result<TblGuest>.Success(item);
+
+    Result:
+        return model;
+    }
+
+    public Result<TblGuest> AssignGuest(int guestId, int tableId, int eventId)
+    {
+        Result<TblGuest> model;
+
+        var item = _db.TblGuests.AsNoTracking().FirstOrDefault(x => x.Id == guestId && x.TableId == tableId);
+        if (item is null)
+        {
+            model = Result<TblGuest>.NotFound();
+            goto Result;
+        }
+
+        // FullName Phone RsvpStatus IsCheckdIn CheckedInAt TableId EventId
+        item.TableId = tableId;
+        item.EventId = eventId;
 
         _db.Entry(item).State = EntityState.Modified;
         _db.SaveChanges();

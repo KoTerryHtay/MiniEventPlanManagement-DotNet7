@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using MiniEventPlanManagement.Database.Models;
 using MiniEventPlanManagement.Domain.Features.Event;
 using MiniEventPlanManagement.Domain.Features.Guest;
 using MiniEventPlanManagement.Mvc.Models;
@@ -17,6 +18,81 @@ public class GuestController : Controller
     public IActionResult Index()
     {
         return View();
+    }
+
+    [HttpPost]
+    [Route("/api/guests/create")]
+    public IActionResult CreateGuest(GuestRequestModel requestModel)
+    {
+        MessageModel model;
+        try
+        {
+            _guestService.CreateGuest(new TblGuest
+            {
+                FullName = requestModel.FullName
+            });
+            model = new MessageModel(true, "Guest Created Successfully");
+        }
+        catch (Exception ex)
+        {
+            model = new MessageModel(false, ex.ToString());
+        }
+
+        return Json(model);
+    }
+
+    [HttpPost]
+    [Route("/api/guests/assign")]
+    public IActionResult AssignGuest(GuestRequestModel requestModel)
+    {
+        MessageModel model;
+        try
+        {
+            _guestService.AssignGuest((int)requestModel.Id!, (int)requestModel.TableId!, (int)requestModel.EventId!);
+            model = new MessageModel(true, "Assign Guest Successfully");
+        }
+        catch (Exception ex)
+        {
+            model = new MessageModel(false, ex.ToString());
+        }
+
+        return Json(model);
+    }
+
+    [Route("/api/guests/{id:int}")]
+    public IActionResult GetGuest(int id)
+    {
+        MessageModel model;
+        var data = _guestService.GetGuestById(id);
+
+        if (data.Data is null)
+        {
+            model = new MessageModel(false, "Guest not found");
+            goto Results;
+        }
+
+        model = new MessageModel(true, "Guest get successfully", data.Data);
+
+    Results:
+        return Json(model);
+    }
+
+    [Route("/api/guests/check-table/{tableId:int}")]
+    public IActionResult GetGuestsNotInTableByTableId(int tableId)
+    {
+        MessageModel model;
+        var data = _guestService.GetGuestsNotInTableByTableId(tableId);
+
+        if (data.Data is null)
+        {
+            model = new MessageModel(false, "Guest not found");
+            goto Results;
+        }
+
+        model = new MessageModel(true, "Guest get successfully", data.Data);
+
+    Results:
+        return Json(model);
     }
 
     [HttpPost]

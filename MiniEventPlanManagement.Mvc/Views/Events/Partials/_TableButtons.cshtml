@@ -1,0 +1,23 @@
+﻿@model List<MiniEventPlanManagement.Domain.Models.Dto.Event.TableDto>
+
+<div class="card mb-4">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <strong>Tables (@Model.Count)</strong>
+        <button type="button" class="btn btn-sm btn-outline-secondary table-btn active"
+                data-table-id="all" data-table-name="All Guests">
+            Show All Guests
+        </button>
+    </div>
+    <div class="card-body" id="tablesContainer">
+        @foreach (var table in Model)
+        {
+            <button type="button"
+                    class="btn btn-outline-primary m-1 table-btn"
+                    data-table-id="@table.Id"
+                    data-table-name="@table.Name">
+                @table.Name
+                <span class="badge bg-light text-dark ms-1">@table.Guests.Count / @table.Capacity</span>
+            </button>
+        }
+    </div>
+</div>
