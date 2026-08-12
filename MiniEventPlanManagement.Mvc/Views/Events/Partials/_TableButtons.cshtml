@@ -3,10 +3,16 @@
 <div class="card mb-4">
     <div class="card-header d-flex justify-content-between align-items-center">
         <strong>Tables (@Model.Count)</strong>
-        <button type="button" class="btn btn-sm btn-outline-secondary table-btn active"
-                data-table-id="all" data-table-name="All Guests">
-            Show All Guests
-        </button>
+        <div>
+            <!-- Add Table Button -->
+            <button type="button" class="btn btn-sm btn-success me-2" data-bs-toggle="modal" data-bs-target="#createTableModal">
+                + Add Table
+            </button>
+            <button type="button" class="btn btn-sm btn-outline-secondary table-btn active"
+                    data-table-id="all" data-table-name="All Guests">
+                Show All Guests
+            </button>
+        </div>
     </div>
     <div class="card-body" id="tablesContainer">
         @foreach (var table in Model)
@@ -19,5 +25,27 @@
                 <span class="badge bg-light text-dark ms-1">@table.Guests.Count / @table.Capacity</span>
             </button>
         }
+    </div>
+</div>
+
+<!-- Create Table Modal -->
+<div class="modal fade" id="createTableModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Create New Table</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label class="form-label">Table Name</label>
+                    <input type="text" id="newTableName" class="form-control" placeholder="e.g. Table 5">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-success" id="btnSaveTable">Save Table</button>
+            </div>
+        </div>
     </div>
 </div>

@@ -1,6 +1,18 @@
 ﻿<div class="card">
-    <div class="card-header">
+    <div class="card-header d-flex justify-content-between align-items-center">
         <strong id="guestListTitle">All Guests</strong>
+        <div>
+            <!-- Assign Guest Button (Only visible when a specific table is selected) -->
+            <button type="button" id="btnAssignGuest" class="btn btn-sm btn-warning me-2" style="display:none;"
+                    data-bs-toggle="modal" data-bs-target="#assignGuestModal">
+                + Assign Guest to this Table
+            </button>
+
+            <!-- Add Guest Button -->
+            <button type="button" class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#createGuestModal">
+                + Add Guest
+            </button>
+        </div>
     </div>
     <div class="card-body">
         <div class="table-responsive">
@@ -16,9 +28,56 @@
                     </tr>
                 </thead>
                 <tbody id="guestTableBody">
-                    <!-- JS ဖြင့် Render မည် -->
+                    <!-- JS Render -->
                 </tbody>
             </table>
+        </div>
+    </div>
+</div>
+
+<!-- Create Guest Modal -->
+<div class="modal fade" id="createGuestModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Add New Guest</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label class="form-label">Full Name</label>
+                    <input type="text" id="newGuestName" class="form-control" placeholder="Enter full name">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" id="btnSaveGuest">Save Guest</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Assign Guest Modal (With Search) -->
+<div class="modal fade" id="assignGuestModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Assign Guest to Table</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label class="form-label">Search and Select Guest</label>
+                    <!-- Select2 Target -->
+                    <select id="guestSelectDropdown" class="form-select" style="width: 100%;">
+                        <option value="">-- Loading... --</option>
+                    </select>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-warning" id="btnAssignGuestSave">Assign</button>
+            </div>
         </div>
     </div>
 </div>
