@@ -20,6 +20,14 @@ public class GuestController : Controller
         return View();
     }
 
+    [Route("/guests")]
+    public IActionResult AllGuests()
+    {
+        var data = _guestService.GetAllGuests();
+
+        return View("AllGuests", data.Data);
+    }
+
     [HttpPost]
     [Route("/api/guests/create")]
     public IActionResult CreateGuest(GuestRequestModel requestModel)

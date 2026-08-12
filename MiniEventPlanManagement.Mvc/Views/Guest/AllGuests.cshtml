@@ -1,0 +1,164 @@
+﻿@model List<GuestAssignmentDto>
+
+@{
+    ViewData["Title"] = "All Guests";
+}
+
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>All Guests</h2>
+        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createGuestModal">
+            + Create Guest
+        </button>
+    </div>
+
+    <!-- Search Bar (Local Filter) -->
+    <div class="mb-3">
+        <input type="text" id="searchInput" class="form-control" placeholder="Search by Name, Phone, Event or Table...">
+    </div>
+
+    <!-- Guests Table -->
+    <div class="card">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-bordered table-hover align-middle mb-0" id="guestTable">
+                    <thead class="table-light">
+                        <tr>
+                            <th style="width: 50px;">No.</th>
+                            <th>Guest Name</th>
+                            <th>Event</th>
+                            <th>Table</th>
+                            <th>RSVP Status</th>
+                            <th class="text-center">Check-In</th>
+                            <th>Checked In At</th>
+                        </tr>
+                    </thead>
+                    <tbody id="guestTableBody">
+                        @if (Model != null && Model.Any())
+                        {
+                            int count = 1;
+                            foreach (var guest in Model)
+                            {
+                                <tr>
+                                    <td>@count</td>
+                                    <td class="guest-name">@guest.GuestName</td>
+                                    <td class="event-name">@guest.EventName</td>
+                                    <td class="table-name">@guest.TableName</td>
+                                    <td>
+                                        <span class="badge @(guest.RsvpStatus == "Confirmed" ? "bg-success" : guest.RsvpStatus == "Pending" ? "bg-warning text-dark" : "bg-secondary")">
+                                            @guest.RsvpStatus
+                                        </span>
+                                    </td>
+                                    <td class="text-center">
+                                        @if (guest.IsCheckedIn)
+                                        {
+                                            <span class="badge bg-success">Checked In</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-light text-dark border">Not Yet</span>
+                                        }
+                                    </td>
+                                    <td>
+                                        @if (guest.CheckedInAt.HasValue)
+                                        {
+                                            @guest.CheckedInAt.Value.ToString("MMM dd, yyyy hh:mm tt")
+                                        }
+                                        else
+                                        {
+                                            <span>-</span>
+                                        }
+                                    </td>
+                                </tr>
+                                count++;
+                            }
+                        }
+                        else
+                        {
+                            <tr>
+                                <td colspan="8" class="text-center text-muted py-4">No guests found.</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Create Guest Modal -->
+<div class="modal fade" id="createGuestModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Create New Guest</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label for="newGuestName" class="form-label">Full Name</label>
+                    <input type="text" class="form-control" id="newGuestName" placeholder="Enter full name">
+                </div>
+                <!-- Note: API requires only FullName based on previous request. 
+                     If EventId is needed for assignment, logic might need adjustment, 
+                     but sticking to "/api/guests/create" with FullName only as requested. -->
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" id="btnSaveNewGuest">Save Guest</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+            // ==========================================
+            // 1. Local Search / Filter Logic
+            // ==========================================
+            $("#searchInput").on("keyup", function () {
+                var value = $(this).val().toLowerCase();
+
+                $("#guestTableBody tr").filter(function () {
+                    // Hide row if text not found, show if found
+                    $(this).toggle($(this).text().toLowerCase().indexOf(value) > -1);
+                });
+            });
+
+            // ==========================================
+            // 2. Create Guest Logic (API Call)
+            // ==========================================
+            $("#btnSaveNewGuest").click(function () {
+                var fullName = $("#newGuestName").val().trim();
+
+                if (!fullName) {
+                    alert("Please enter guest name.");
+                    return;
+                }
+
+                var $btn = $(this);
+                $btn.prop("disabled", true).text("Saving...");
+
+                $.ajax({
+                    url: "/api/guests/create",
+                    type: "POST",
+                    data: { FullName: fullName },
+                    success: function (response) {
+                        alert("Guest created successfully!");
+                        
+                        // Reload page to see the new guest in the list
+                        // Since we are using Server-Side Rendering for the list, 
+                        // reloading is the easiest way to update the UI consistently.
+                        window.location.reload(); 
+                    },
+                    error: function (error) {
+                        console.log(error);
+                        alert("Error creating guest. Please try again.");
+                        $btn.prop("disabled", false).text("Save Guest");
+                    }
+                });
+            });
+        });
+    </script>
+}

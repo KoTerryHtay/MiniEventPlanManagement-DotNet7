@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using MiniEventPlanManagement.Database.Models;
 using MiniEventPlanManagement.Domain.Models.Dto;
 using System;
@@ -18,14 +19,48 @@ public class GuestService
         _db = db;
     }
 
-    public Result<List<TblGuest>> GetAllGuests()
+    public Result<List<GuestAssignmentDto>> GetAllGuests()
     {
+        Result<List<GuestAssignmentDto>> model;
 
-        Result<List<TblGuest>> model;
+        var data = _db.TblGuests
+    .GroupJoin(
+        _db.TblGuestAssignments,
+        guest => guest.Id,
+        assignment => assignment.GuestId,
+        (guest, assignments) => new { guest, assignments }
+    )
+    .SelectMany(
+        temp => temp.assignments.DefaultIfEmpty(),
+        (temp, assignment) => new GuestAssignmentDto
+        {
+            Id = assignment != null ? assignment.Id : 0,
 
-        var guests = _db.TblGuests.AsNoTracking().ToList();
-        model = Result<List<TblGuest>>.Success(guests);
+            GuestId = temp.guest.Id,
+            GuestName = temp.guest.FullName,
 
+            EventId = assignment != null ? assignment.EventId : 0,
+            EventName = assignment != null ? assignment.Event.Name : "Unassigned",
+
+            TableId = assignment != null ? assignment.TableId : 0,
+            TableName = assignment != null ? assignment.Table.Name : "Unassigned",
+
+            RsvpStatus = assignment != null ? assignment.RsvpStatus : "Pending",
+            IsCheckedIn = assignment != null ? assignment.IsCheckedIn : false,
+            CheckedInAt = assignment != null ? assignment.CheckedInAt : null
+        }
+    )
+    .ToList();
+
+        if (data is null)
+        {
+            model = Result<List<GuestAssignmentDto>>.NotFound();
+            goto Result;
+        }
+
+        model = Result<List<GuestAssignmentDto>>.Success(data);
+
+    Result:
         return model;
     }
 
