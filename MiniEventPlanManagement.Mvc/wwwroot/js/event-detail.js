@@ -1,25 +1,40 @@
-﻿$(document).ready(function () {
+﻿/// <reference path="~/js/types/event-data-types.js" />
+
+$(document).ready(function () {
     // ==========================================
     // Global Variables
     // ==========================================
     var eventDataElement = document.getElementById('eventDataScript');
     if (!eventDataElement) return;
 
+    /** @type {EventData} */
     var eventData = JSON.parse(eventDataElement.textContent);
     var allGuests = [];
-    var currentSelectedTableId = "all"; // Track currently viewed table
+    var currentSelectedTableId = "all";
     var eventId = $("#currentEventId").val();
 
-    // Initialize Data
+    console.log("eventData >>>", eventData);
+
+    // Initialize Data - Updated for new DTO structure
     if (eventData.tables && eventData.tables.length > 0) {
         $.each(eventData.tables, function (i, table) {
-            if (table.guests && table.guests.length > 0) {
-                $.each(table.guests, function (j, guest) {
-                    guest.tableId = table.id;
-                    guest.tableName = table.name;
-                    guest.rsvpStatus = (guest.rsvpStatus || '').trim();
+            if (table.guestAssignments && table.guestAssignments.length > 0) {
+                $.each(table.guestAssignments, function (j, assignment) {
+                    // Map GuestAssignmentDto to a flat guest object for UI rendering
+                    var guest = {
+                        id: assignment.id,             // Assignment ID
+                        guestId: assignment.guestId,   // Actual Guest ID
+                        fullName: assignment.guestName,// Mapped from GuestName
+                        phone: null,                   // Not in Assignment DTO, handle separately if needed
+                        rsvpStatus: (assignment.rsvpStatus || '').trim(),
+                        isCheckedIn: assignment.isCheckedIn, // Fixed typo from isCheckdIn
+                        checkedInAt: assignment.checkedInAt,
+                        tableId: assignment.tableId,
+                        tableName: assignment.tableName
+                    };
 
-                    var exists = $.grep(allGuests, function (g) { return g.id === guest.id; }).length > 0;
+                    // Use guestId as unique identifier for deduplication
+                    var exists = $.grep(allGuests, function (g) { return g.guestId === guest.guestId; }).length > 0;
                     if (!exists) allGuests.push(guest);
                 });
             }
@@ -27,17 +42,17 @@
     }
 
     // ==========================================
-    // 1. Table Click Handler (Updated)
+    // 1. Table Click Handler
     // ==========================================
     $(".table-btn").click(function () {
         var tableId = $(this).data("table-id");
         var tableName = $(this).data("table-name");
-        currentSelectedTableId = tableId; // Update global state
+        currentSelectedTableId = tableId;
+        //console.log("currentSelectedTableId >>>", currentSelectedTableId);
 
         $(".table-btn").removeClass("active");
         $(this).addClass("active");
 
-        // Show/Hide Assign Button based on selection
         if (tableId === "all") {
             $("#btnAssignGuest").hide();
         } else {
@@ -58,171 +73,7 @@
     renderGuestTable(allGuests);
 
     // ==========================================
-    // 2. Feature: Create Guest
-    // ==========================================
-    $("#btnSaveGuest").click(function () {
-        var fullName = $("#newGuestName").val().trim();
-        if (!fullName) {
-            alert("Please enter guest name.");
-            return;
-        }
-
-        console.log("fullName >>>", fullName);
-
-        /*
-        $.ajax({
-            url: "/api/guests/create",
-            type: "POST",
-            data: {
-                FullName: fullName
-            }, // Only FullName needed as per request
-            success: function (response) {
-                // Assuming response returns the created Guest object or at least Id
-                // If API doesn't return full object, we might need to construct it or reload
-                // Here assuming response has Id, FullName etc. or we construct a temp one
-
-                var newGuest = {
-                    id: response.id || Date.now(), // Fallback ID if not returned
-                    fullName: fullName,
-                    phone: null,
-                    rsvpStatus: "Pending",
-                    isCheckdIn: false,
-                    checkedInAt: null,
-                    tableId: null, // Not assigned yet
-                    tableName: null
-                };
-
-                // If API returns the full object, use it:
-                if (response.Data) newGuest = response.Data;
-
-                allGuests.push(newGuest);
-
-                // Re-render if viewing "All"
-                if (currentSelectedTableId === "all") {
-                    renderGuestTable(allGuests);
-                }
-
-                $("#newGuestName").val("");
-                $('#createGuestModal').modal('hide');
-                alert("Guest created successfully!");
-            },
-            error: function (error) {
-                console.log(error);
-                alert("Error creating guest.");
-            }
-        }); */
-    });
-
-    // ==========================================
-    // 3. Feature: Assign Guest (With Search & Check)
-    // ==========================================
-
-    // When Assign Modal Opens -> Load Unassigned Guests
-    $('#assignGuestModal').on('shown.bs.modal', function () {
-        if (currentSelectedTableId === "all") return;
-
-        var $dropdown = $("#guestSelectDropdown");
-        $dropdown.empty().append('<option value="">-- Loading... --</option>');
-
-        // Disable select2 temporarily if initialized
-        if ($dropdown.hasClass("select2-hidden-accessible")) {
-            $dropdown.select2('destroy');
-        }
-
-        // API: Check guests NOT in this table
-        $.ajax({
-            url: "/api/guests/check-table/" + currentSelectedTableId,
-            type: "GET",
-            success: function (response) {
-                $dropdown.empty().append('<option value=""></option>'); // Placeholder for Select2
-
-                console.log("assignGuestModal >>>", response)
-
-                if (response && response.Data.length > 0) {
-                    $.each(response.Data, function (i, guest) {
-                        /*
-                        {
-                            "Id": 2,
-                            "FullName": "Guest 2",
-                            "Phone": null,
-                            "RsvpStatus": "Pending   ",
-                            "IsCheckdIn": false,
-                            "CheckedInAt": null,
-                            "TableId": 2,
-                            "EventId": 2,
-                            "Event": null,
-                            "Table": null
-                        }
-                        */
-
-                        console.log("guest >>>", guest);
-                        $dropdown.append($('<option>', {
-                            value: guest.Id,
-                            text: guest.FullName + (guest.Phone ? ' (' + guest.Phone + ')' : '')
-                        }));
-                    });
-                } else {
-                    $dropdown.append('<option value="" disabled>No available guests found</option>');
-                }
-
-                // Initialize Select2 for Search functionality
-                $dropdown.select2({
-                    placeholder: "Search for a guest...",
-                    allowClear: true,
-                    dropdownParent: $('#assignGuestModal') // Important for Modal z-index
-                });
-            },
-            error: function (error) {
-                console.log(error);
-                $dropdown.empty().append('<option value="">Error loading guests</option>');
-            }
-        });
-    });
-
-    // Save Assignment
-    $("#btnAssignGuestSave").click(function () {
-        var guestId = $("#guestSelectDropdown").val();
-
-        if (!guestId) {
-            alert("Please select a guest.");
-            return;
-        }
-        console.log("#btnAssignGuestSave >>>", { guestId, currentSelectedTableId, eventId });
-        /*
-        $.ajax({
-            url: "/api/guests/assign",
-            type: "POST",
-            data: {
-                Id: parseInt(guestId),
-                TableId: parseInt(currentSelectedTableId),
-                EventId: parseInt(eventId)
-            },
-            success: function (response) {
-                // Update Local Data
-                var guestIndex = allGuests.findIndex(g => g.id == guestId);
-                if (guestIndex > -1) {
-                    allGuests[guestIndex].tableId = parseInt(currentSelectedTableId);
-                    // Find table name
-                    var tableBtn = $('.table-btn[data-table-id="' + currentSelectedTableId + '"]');
-                    allGuests[guestIndex].tableName = tableBtn.data("table-name");
-                }
-
-                // Re-render current view
-                var filteredGuests = $.grep(allGuests, function (g) { return g.tableId == currentSelectedTableId; });
-                renderGuestTable(filteredGuests);
-
-                $('#assignGuestModal').modal('hide');
-                alert("Guest assigned successfully!");
-            },
-            error: function (error) {
-                console.log(error);
-                alert("Error assigning guest.");
-            }
-        }); */
-    });
-
-    // ==========================================
-    // 4. Feature: Create Table
+    // 2. Feature: Create Table (Updated for new DTO)
     // ==========================================
     $("#btnSaveTable").click(function () {
         var tableName = $("#newTableName").val().trim();
@@ -230,8 +81,10 @@
             alert("Please enter table name.");
             return;
         }
-        console.log("#btnSaveTable >>>", { tableName, eventId });
-        /*
+
+        console.log("#btnSaveTable >>>", { Name: tableName, EventId: eventId });
+
+        
         $.ajax({
             url: "/api/tables/create",
             type: "POST",
@@ -240,54 +93,173 @@
                 EventId: parseInt(eventId)
             },
             success: function (response) {
-                // Option 1: Reload Page (Simplest & Safest for UI consistency)
-                // location.reload();
+                console.log("Create Table Response >>>", response);
 
-                // Option 2: Dynamic DOM Update (Better UX)
-                // Assuming response contains the new Table object { id, name, capacity... }
-                const newTable = response.Data;
+                // API returns Result<TableDto> -> response.Data contains TableDto
+                var newTable = response.Data;
+
+                if (!newTable || !newTable.Id) {
+                    alert("Error: Invalid response from server.");
+                    return;
+                }
+
+                // Dynamically add new table button to container
                 var newTableHtml = '<button type="button" class="btn btn-outline-primary m-1 table-btn" ' +
-                    'data-table-id="' + newTable.id + '" data-table-name="' + newTable.name + '">' +
-                    newTable.name + ' <span class="badge bg-light text-dark ms-1">0 / ' + (newTable.capacity || 4) + '</span>' +
+                    'data-table-id="' + newTable.Id + '" ' +
+                    'data-table-name="' + escapeHtml(newTable.Name) + '">' +
+                    escapeHtml(newTable.Name) +
+                    ' <span class="badge bg-light text-dark ms-1">0 / ' + (newTable.Capacity || 4) + '</span>' +
                     '</button>';
 
                 $("#tablesContainer").append(newTableHtml);
 
-                // Update Count in Header (Optional logic needed here)
-
+                // Clear input & close modal
                 $("#newTableName").val("");
                 $('#createTableModal').modal('hide');
                 alert("Table created successfully!");
             },
-            error: function (error) {
-                console.log(error);
-                alert("Error creating table.");
+            error: function (xhr, status, error) {
+                console.error("Create Table Error >>>", xhr.responseText);
+                var msg = "Error creating table.";
+                try {
+                    var errData = JSON.parse(xhr.responseText);
+                    if (errData.Message) msg = errData.Message;
+                } catch (e) { }
+                alert(msg);
             }
-        }); */
+        }); 
     });
 
     // ==========================================
-    // Existing: RSVP & CheckIn Logic (Keep from previous step)
+    // 3. Feature: Create Guest
+    // ==========================================
+    $("#btnSaveGuest").click(function () {
+        var fullName = $("#newGuestName").val().trim();
+        if (!fullName) {
+            alert("Please enter guest name.");
+            return;
+        }
+
+        // TODO: Uncomment and adjust when API is ready
+        
+        $.ajax({
+            url: "/api/guests/create",
+            type: "POST",
+            data: { FullName: fullName },
+            success: function (response) {
+                if (currentSelectedTableId === "all") renderGuestTable(allGuests);
+                $("#newGuestName").val("");
+                $('#createGuestModal').modal('hide');
+                alert("Guest created successfully!");
+            },
+            error: function () { alert("Error creating guest."); }
+        });
+        
+    });
+
+    // ==========================================
+    // 4. Feature: Assign Guest
+    // ==========================================
+    $('#assignGuestModal').on('shown.bs.modal', function () {
+        if (currentSelectedTableId === "all") return;
+        console.log("on");
+
+        var $dropdown = $("#guestSelectDropdown");
+        $dropdown.empty().append('<option value="">-- Loading... --</option>');
+
+        if ($dropdown.hasClass("select2-hidden-accessible")) {
+            $dropdown.select2('destroy');
+        }
+
+        $.ajax({
+            url: "/api/guests/check-table/" + currentSelectedTableId,
+            type: "GET",
+            success: function (response) {
+                console.log("/api/guests/check-table/ >>>", response);
+
+                $dropdown.empty().append('<option value=""></option>');
+
+                if (response && response.Data && response.Data.length > 0) {
+                    $.each(response.Data, function (i, guest) {
+                        // Updated to use GuestId and GuestName/FullName based on API response
+                        // Assuming check-table returns GuestDto or similar with Id/FullName
+                        var val = guest.Id || guest.GuestId || guest.id;
+                        var text = guest.FullName || guest.GuestName || guest.fullName;
+                        var phone = guest.Phone || guest.phone;
+
+                        $dropdown.append($('<option>', {
+                            value: val,
+                            text: text + (phone ? ' (' + phone + ')' : '')
+                        }));
+                    });
+                } else {
+                    $dropdown.append('<option value="" disabled>No available guests found</option>');
+                }
+
+                $dropdown.select2({
+                    placeholder: "Search for a guest...",
+                    allowClear: true,
+                    dropdownParent: $('#assignGuestModal')
+                });
+            },
+            error: function () {
+                $dropdown.empty().append('<option value="">Error loading guests</option>');
+            }
+        });
+    });
+
+    $("#btnAssignGuestSave").click(function () {
+        var guestId = $("#guestSelectDropdown").val();
+        if (!guestId) {
+            alert("Please select a guest.");
+            return;
+        }
+
+        // TODO: Uncomment when API is ready
+        /*
+        $.ajax({
+            url: "/api/guests/assign",
+            type: "POST",
+            data: {
+                GuestId: parseInt(guestId),      // Changed from Id to GuestId
+                TableId: parseInt(currentSelectedTableId),
+                EventId: parseInt(eventId)
+            },
+            success: function (response) {
+                var idx = allGuests.findIndex(g => g.guestId == guestId);
+                if (idx > -1) {
+                    allGuests[idx].tableId = parseInt(currentSelectedTableId);
+                    var tableBtn = $('.table-btn[data-table-id="' + currentSelectedTableId + '"]');
+                    allGuests[idx].tableName = tableBtn.data("table-name");
+                }
+                var filtered = $.grep(allGuests, function (g) { return g.tableId == currentSelectedTableId; });
+                renderGuestTable(filtered);
+                $('#assignGuestModal').modal('hide');
+                alert("Guest assigned successfully!");
+            },
+            error: function () { alert("Error assigning guest."); }
+        });
+        */
+    });
+
+    // ==========================================
+    // 5. RSVP & CheckIn Handlers
     // ==========================================
     $(document).on("change", ".rsvp-select", function () {
-        // ... (Previous RSVP Code) ...
         var guestId = $(this).data("guest-id");
         var newStatus = $(this).val();
         var tableId = $(this).attr("data-table-id");
         console.log("RSVP Update:", { guestId, newStatus, tableId });
-        // Add AJAX call here if needed
+        // TODO: Add AJAX call
     });
 
     $(document).on("change", ".checkin-toggle", function () {
-        // ... (Previous CheckIn Code) ...
         var guestId = $(this).data("guest-id");
         var isCheckedIn = $(this).is(":checked");
         var $checkbox = $(this);
-        var tableId = $(this).attr("data-table-id");
-
-        // Visual Update
         var row = $checkbox.closest("tr");
         var timeCell = row.find(".checked-in-at-cell");
+
         if (isCheckedIn) {
             row.addClass("table-success");
             timeCell.text(new Date().toLocaleString());
@@ -295,8 +267,7 @@
             row.removeClass("table-success");
             timeCell.text('-');
         }
-
-        // Add AJAX call here if needed
+        // TODO: Add AJAX call
     });
 
     // ==========================================
@@ -314,26 +285,31 @@
         var rsvpOptions = ['Pending', 'Confirmed', 'Declined', 'Waitlist'];
 
         $.each(guests, function (index, guest) {
-            var selectHtml = '<select class="form-select form-select-sm rsvp-select" data-guest-id="' + guest.id + '" data-table-id="' + guest.tableId + '">';
+            // Use guestId for data attributes to match DTO
+            var gid = guest.guestId || guest.id;
+
+            var selectHtml = '<select class="form-select form-select-sm rsvp-select" data-guest-id="' + gid + '" data-table-id="' + guest.tableId + '">';
             $.each(rsvpOptions, function (i, status) {
                 var selected = guest.rsvpStatus === status ? "selected" : "";
                 selectHtml += '<option value="' + status + '" ' + selected + '>' + status + '</option>';
             });
             selectHtml += '</select>';
 
-            var checkInChecked = guest.isCheckdIn ? "checked" : "";
-            var rowClass = guest.isCheckdIn ? "table-success" : "";
+            // Fixed property name: isCheckedIn (was isCheckdIn)
+            var checkInChecked = guest.isCheckedIn ? "checked" : "";
+            var rowClass = guest.isCheckedIn ? "table-success" : "";
 
             var checkedInAtDisplay = guest.checkedInAt
                 ? new Date(guest.checkedInAt).toLocaleString('en-US', { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })
                 : '-';
 
+            // Fixed property name: fullName mapped from guestName in initialization
             var row = '<tr class="' + rowClass + '">' +
                 '<td>' + (index + 1) + '</td>' +
                 '<td>' + escapeHtml(guest.fullName) + '</td>' +
                 '<td>' + escapeHtml(guest.phone || '-') + '</td>' +
                 '<td>' + selectHtml + '</td>' +
-                '<td class="text-center"><input type="checkbox" class="form-check-input checkin-toggle" data-guest-id="' + guest.id + '" data-table-id="' + guest.tableId + '" ' + checkInChecked + ' /></td>' +
+                '<td class="text-center"><input type="checkbox" class="form-check-input checkin-toggle" data-guest-id="' + gid + '" data-table-id="' + guest.tableId + '" ' + checkInChecked + ' /></td>' +
                 '<td class="text-center small text-muted checked-in-at-cell">' + checkedInAtDisplay + '</td>' +
                 '</tr>';
 

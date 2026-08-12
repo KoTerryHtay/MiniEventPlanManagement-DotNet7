@@ -1,6 +1,6 @@
 ﻿using AutoMapper;
 using MiniEventPlanManagement.Database.Models;
-using MiniEventPlanManagement.Domain.Models.Dto.Event;
+using MiniEventPlanManagement.Domain.Models.Dto;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -21,7 +21,7 @@ public class MappingProfile : Profile
 
         // TblTable -> TableDto
         CreateMap<TblTable, TableDto>()
-            .ForMember(dest => dest.Guests, opt => opt.MapFrom(src => src.TblGuests));
+            .ForMember(dest => dest.GuestAssignments, opt => opt.MapFrom(src => src.TblGuestAssignments));
 
         // TblGuest -> GuestDto
         CreateMap<TblGuest, GuestDto>();

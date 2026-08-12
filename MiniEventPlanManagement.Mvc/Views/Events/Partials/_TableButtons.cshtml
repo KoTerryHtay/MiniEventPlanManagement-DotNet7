@@ -1,4 +1,5 @@
-﻿@model List<MiniEventPlanManagement.Domain.Models.Dto.Event.TableDto>
+﻿@using MiniEventPlanManagement.Domain.Models.Dto
+@model List<TableDto>
 
 <div class="card mb-4">
     <div class="card-header d-flex justify-content-between align-items-center">
@@ -22,7 +23,7 @@
                     data-table-id="@table.Id"
                     data-table-name="@table.Name">
                 @table.Name
-                <span class="badge bg-light text-dark ms-1">@table.Guests.Count / @table.Capacity</span>
+                <span class="badge bg-light text-dark ms-1">@table.GuestAssignments.Count / @table.Capacity</span>
             </button>
         }
     </div>

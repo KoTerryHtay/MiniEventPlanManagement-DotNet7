@@ -60,11 +60,12 @@ public partial class AppDbContext : DbContext
         {
             entity.ToTable("Tbl_GuestAssignment");
 
-            entity.HasIndex(e => new { e.EventId, e.TableId }, "IX_Tbl_GuestAssignment").IsUnique();
+            entity.HasIndex(e => new { e.EventId, e.TableId, e.GuestId }, "IX_Tbl_GuestAssignment").IsUnique();
 
             entity.Property(e => e.CheckedInAt).HasColumnType("datetime");
             entity.Property(e => e.RsvpStatus)
                 .HasMaxLength(10)
+                .HasDefaultValueSql("(N'Pending')")
                 .IsFixedLength();
 
             entity.HasOne(d => d.Event).WithMany(p => p.TblGuestAssignments)

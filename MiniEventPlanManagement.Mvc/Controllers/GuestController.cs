@@ -27,11 +27,11 @@ public class GuestController : Controller
         MessageModel model;
         try
         {
-            _guestService.CreateGuest(new TblGuest
+            var data = _guestService.CreateGuest(new TblGuest
             {
                 FullName = requestModel.FullName
             });
-            model = new MessageModel(true, "Guest Created Successfully");
+            model = new MessageModel(true, "Guest Created Successfully", data);
         }
         catch (Exception ex)
         {

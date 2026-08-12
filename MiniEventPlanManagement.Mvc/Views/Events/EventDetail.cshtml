@@ -1,4 +1,4 @@
-﻿@model MiniEventPlanManagement.Domain.Models.Dto.Event.EventDto
+﻿@model EventDto
 
 @{
     ViewData["Title"] = "Event Details";
@@ -13,13 +13,14 @@
 
 <!-- Serialize Model Data to JSON for Client-Side Use -->
 <script id="eventDataScript" type="application/json">
-    @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model, new System.Text.Json.JsonSerializerOptions { PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase }))
+    @Html.Raw(System.Text.Json.JsonSerializer.Serialize(@Model,
+    new System.Text.Json.JsonSerializerOptions { PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase }))    
 </script>
 
 @section Scripts {
     <script>
         var eventData = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(@Model));
-        console.log("EventDto Complete Data:", eventData);
+        console.log("EventDto Complete Data: >>>", eventData);
     </script>
 
     <script src="~/js/event-detail.js"></script>

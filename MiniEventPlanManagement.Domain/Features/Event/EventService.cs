@@ -1,7 +1,7 @@
 ﻿using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 using MiniEventPlanManagement.Database.Models;
-using MiniEventPlanManagement.Domain.Models.Dto.Event;
+using MiniEventPlanManagement.Domain.Models.Dto;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -40,45 +40,50 @@ public class EventService
         Result<EventDto> model;
         var tableData = _db.TblEvents.AsNoTracking().FirstOrDefault(x => x.Id == id);
 
-        //var data = _db.TblEvents.AsNoTracking()
-        //    .Select(x => new EventDto
-        //    {
-        //        Id = x.Id,
-        //        Name = x.Name,
-        //        EventDate = x.EventDate,
-        //        CreatedDate = x.CreatedDate,
+        var data = _db.TblEvents.AsNoTracking()
+            .Select(x => new EventDto
+            {
+                Id = x.Id,
+                Name = x.Name,
+                EventDate = x.EventDate,
+                CreatedDate = x.CreatedDate,
 
-        //        Tables = x.TblTables
-        //            .Select(t => new TableDto
-        //            {
-        //                Id = t.Id,
-        //                Name = t.Name,
-        //                Capacity = t.Capacity,
-        //                Guests = new GuestDto { }
+                Tables = x.TblTables
+                    .Select(t => new TableDto
+                    {
+                        Id = t.Id,
+                        Name = t.Name,
+                        Capacity = t.Capacity,
+                        GuestAssignments = t.TblGuestAssignments.Select(ga => new GuestAssignmentDto
+                        {
+                            Id = ga.Id,
 
-        //                //_db.TblTables.AsNoTracking().Where(x => x.EventId == id).ToList()
-        //                //t.TblGuests.Select(tg => new GuestDto
-        //                //{
-        //                //    Id = tg.Id,
-        //                //    FullName = tg.FullName,
-        //                //    Phone = tg.Phone,
-        //                //    RsvpStatus = tg.RsvpStatus,
-        //                //    IsCheckdIn = tg.IsCheckdIn,
-        //                //    CheckedInAt = tg.CheckedInAt,
-        //                //}).ToList(),
+                            EventId = ga.EventId,
+                            EventName = ga.Event.Name,
 
-        //            }).ToList()
-        //    .ToList(),
-        //    })
-        //    .FirstOrDefault(x => x.Id == id);
+                            TableId = ga.TableId,
+                            TableName = ga.Table.Name,
 
-        var eventEntity = _db.TblEvents
-            .AsNoTracking()
-            .Include(e => e.TblTables)
-                .ThenInclude(t => t.TblGuests)
+                            GuestId = ga.GuestId,
+                            GuestName = ga.Guest.FullName,
+
+                            RsvpStatus = ga.RsvpStatus,
+                            IsCheckedIn = ga.IsCheckedIn,
+                            CheckedInAt = ga.CheckedInAt,
+
+                        }).ToList(),
+                    }).ToList()
+            .ToList(),
+            })
             .FirstOrDefault(x => x.Id == id);
 
-        var data = _mapper.Map<EventDto>(eventEntity);
+        //var eventEntity = _db.TblEvents
+        //    .AsNoTracking()
+        //    .Include(e => e.TblTables)
+        //        .ThenInclude(t => t.TblGuestAssignments)
+        //    .FirstOrDefault(x => x.Id == id);
+
+        //var data = _mapper.Map<EventDto>(eventEntity);
 
 
         if (data is null)

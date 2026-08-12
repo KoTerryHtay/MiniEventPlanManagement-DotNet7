@@ -12,7 +12,6 @@ public class EventDto
 
     public DateTime CreatedDate { get; set; }
 
-    //public List<GuestDto> Guests { get; set; } = new();
     public List<TableDto> Tables { get; set; } = new();
 }
 

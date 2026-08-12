@@ -6,6 +6,7 @@ using MiniEventPlanManagement.Domain.Features.Guest;
 using MiniEventPlanManagement.Domain.Features.Table;
 using MiniEventPlanManagement.Domain.Features.User;
 using MiniEventPlanManagement.Domain.Mappings;
+using MiniEventPlanManagement.Domain.Models.Dto;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -26,6 +27,7 @@ builder.Services.AddScoped<UserService>();
 builder.Services.AddScoped<EventService>();
 builder.Services.AddScoped<TableService>();
 builder.Services.AddScoped<GuestService>();
+builder.Services.AddScoped<GuestAssignmentDto>();
 
 builder.Services.AddAutoMapper(typeof(MappingProfile));
 

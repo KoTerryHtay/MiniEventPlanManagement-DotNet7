@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using MiniEventPlanManagement.Database.Models;
+using MiniEventPlanManagement.Domain.Models.Dto;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -47,45 +48,64 @@ public class GuestService
         return model;
     }
 
-    public Result<List<TblGuest>> GetGuestsByTableId(int tableId)
+    public Result<List<GuestAssignmentDto>> GetGuestsByTableId(int tableId)
     {
 
-        Result<List<TblGuest>> model;
+        Result<List<GuestAssignmentDto>> model;
 
-        var data = _db.TblGuests
-            .AsNoTracking()
-            .Where(x => x.TableId == tableId)
-            .ToList();
+        var data = _db.TblGuestAssignments
+        .AsNoTracking()
+        .Where(x => x.TableId == tableId)
+        .Select(a => new GuestAssignmentDto
+        {
+            Id = a.Id,
+            GuestId = a.GuestId,
+            GuestName = a.Guest.FullName,
+            EventId = a.EventId,
+            EventName = a.Event.Name,
+            TableId = a.TableId,
+            TableName = a.Table.Name,
+            RsvpStatus = a.RsvpStatus,
+            IsCheckedIn = a.IsCheckedIn,
+            CheckedInAt = a.CheckedInAt
+        })
+        .ToList();
 
         if (data is null)
         {
-            model = Result<List<TblGuest>>.NotFound();
+            model = Result<List<GuestAssignmentDto>>.NotFound();
             goto Result;
         }
 
-        model = Result<List<TblGuest>>.Success(data);
+        model = Result<List<GuestAssignmentDto>>.Success(data);
 
     Result:
         return model;
     }
 
-    public Result<List<TblGuest>> GetGuestsNotInTableByTableId(int tableId)
+    public Result<List<GuestDto>> GetGuestsNotInTableByTableId(int tableId)
     {
 
-        Result<List<TblGuest>> model;
+        Result<List<GuestDto>> model;
 
         var data = _db.TblGuests
             .AsNoTracking()
-            .Where(x => x.TableId != tableId)
+            .Where(x => x.TblGuestAssignments.Any(a => a.TableId == tableId))
+            .Select(g => new GuestDto
+            {
+                Id = g.Id,
+                FullName = g.FullName,
+                Phone = g.Phone
+            })
             .ToList();
 
         if (data is null)
         {
-            model = Result<List<TblGuest>>.NotFound();
+            model = Result<List<GuestDto>>.NotFound();
             goto Result;
         }
 
-        model = Result<List<TblGuest>>.Success(data);
+        model = Result<List<GuestDto>>.Success(data);
 
     Result:
         return model;
@@ -109,11 +129,9 @@ public class GuestService
             goto Result;
         }
 
-        // FullName Phone RsvpStatus IsCheckdIn CheckedInAt TableId EventId
+        // FullName Phone RsvpStatus IsCheckdIn CheckedInAt TableId EventId     
         item.FullName = data.FullName;
         item.Phone = data.Phone;
-        item.TableId = data.TableId;
-        item.EventId = data.EventId;
 
         _db.Entry(item).State = EntityState.Modified;
         _db.SaveChanges();
@@ -124,85 +142,175 @@ public class GuestService
         return model;
     }
 
-    public Result<TblGuest> UpdateGuestRsvp(int guestId, int tableId, string rsvp)
+    public Result<GuestAssignmentDto> UpdateGuestRsvp(int guestId, int tableId, string rsvp)
     {
-        Result<TblGuest> model;
+        Result<GuestAssignmentDto> model;
 
         if (!Enum.TryParse<RSVP>(rsvp, true, out RSVP rsvpEnum))
         {
-            model = Result<TblGuest>.ValidationError("Invalid RSVP status. Please use Pending, Confirmed, Declined, or Waitlist.");
+            model = Result<GuestAssignmentDto>.ValidationError("Invalid RSVP status. Please use Pending, Confirmed, Declined, or Waitlist.");
             goto Result;
         }
 
 
-        var item = _db.TblGuests.AsNoTracking().FirstOrDefault(x => x.Id == guestId && x.TableId == tableId);
+        var assignment = _db.TblGuestAssignments
+            .AsNoTracking()
+            .Include(a => a.Event)
+            .Include(a => a.Table)
+            .Include(a => a.Guest)
+            .FirstOrDefault(x => x.GuestId == guestId && x.TableId == tableId);
 
-        if (item is null)
+        if (assignment is null)
         {
-            model = Result<TblGuest>.NotFound();
+            model = Result<GuestAssignmentDto>.NotFound();
             goto Result;
         }
 
         // FullName Phone RsvpStatus IsCheckdIn CheckedInAt TableId EventId
-        item.RsvpStatus = rsvp;
+        assignment.RsvpStatus = rsvp.Trim();
 
-        _db.Entry(item).State = EntityState.Modified;
+        _db.Entry(assignment).State = EntityState.Modified;
         _db.SaveChanges();
 
-        model = Result<TblGuest>.Success(item);
+        var dto = new GuestAssignmentDto
+        {
+            Id = assignment.Id,
+            GuestId = assignment.GuestId,
+            GuestName = assignment.Guest.FullName,
+            EventId = assignment.EventId,
+            EventName = assignment.Event.Name,
+            TableId = assignment.TableId,
+            TableName = assignment.Table.Name,
+            RsvpStatus = assignment.RsvpStatus,
+            IsCheckedIn = assignment.IsCheckedIn,
+            CheckedInAt = assignment.CheckedInAt
+        };
+
+        model = Result<GuestAssignmentDto>.Success(dto);
 
     Result:
         return model;
     }
 
-    public Result<TblGuest> GuestCheckIn(int guestId, int tableId, bool check)
+    public Result<GuestAssignmentDto> GuestCheckIn(int guestId, int tableId, bool check)
     {
-        Result<TblGuest> model;
+        Result<GuestAssignmentDto> model;
 
-        var item = _db.TblGuests.AsNoTracking().FirstOrDefault(x => x.Id == guestId && x.TableId == tableId);
-        if (item is null)
+        var assignment = _db.TblGuestAssignments
+        .Include(a => a.Guest)
+        .Include(a => a.Event)
+        .Include(a => a.Table)
+        .FirstOrDefault(a => a.GuestId == guestId && a.TableId == tableId);
+
+        if (assignment is null)
         {
-            model = Result<TblGuest>.NotFound();
+            model = Result<GuestAssignmentDto>.NotFound();
             goto Result;
         }
 
         // FullName Phone RsvpStatus IsCheckdIn CheckedInAt TableId EventId
-        item.IsCheckdIn = check;
-        item.CheckedInAt = DateTime.Now;
+        assignment.IsCheckedIn = check;
+        assignment.CheckedInAt = check ? DateTime.Now : null;
 
-        _db.Entry(item).State = EntityState.Modified;
+        _db.Entry(assignment).State = EntityState.Modified;
         _db.SaveChanges();
 
-        model = Result<TblGuest>.Success(item);
+        var dto = new GuestAssignmentDto
+        {
+            Id = assignment.Id,
+            GuestId = assignment.GuestId,
+            GuestName = assignment.Guest.FullName,
+            EventId = assignment.EventId,
+            EventName = assignment.Event.Name,
+            TableId = assignment.TableId,
+            TableName = assignment.Table.Name,
+            RsvpStatus = assignment.RsvpStatus,
+            IsCheckedIn = assignment.IsCheckedIn,
+            CheckedInAt = assignment.CheckedInAt
+        };
+
+        model = Result<GuestAssignmentDto>.Success(dto);
 
     Result:
         return model;
     }
 
-    public Result<TblGuest> AssignGuest(int guestId, int tableId, int eventId)
+    public Result<GuestAssignmentDto> AssignGuest(int guestId, int tableId, int eventId)
     {
-        Result<TblGuest> model;
+        Result<GuestAssignmentDto> model;
 
-        var item = _db.TblGuests.AsNoTracking().FirstOrDefault(x => x.Id == guestId && x.TableId == tableId);
-        if (item is null)
+        var guest = _db.TblGuests.AsNoTracking().FirstOrDefault(x => x.Id == guestId);
+        if (guest is null)
         {
-            model = Result<TblGuest>.NotFound();
+            model = Result<GuestAssignmentDto>.NotFound();
             goto Result;
         }
 
-        // FullName Phone RsvpStatus IsCheckdIn CheckedInAt TableId EventId
-        item.TableId = tableId;
-        item.EventId = eventId;
+        // Check if assignment already exists
+        var existing = _db.TblGuestAssignments
+            .FirstOrDefault(a => a.GuestId == guestId && a.TableId == tableId && a.EventId == eventId);
 
-        _db.Entry(item).State = EntityState.Modified;
+        if (existing != null)
+        {
+            // Already assigned to this table
+            var dto = MapToDto(existing);
+            return Result<GuestAssignmentDto>.Success(dto);
+        }
+
+        // Remove old assignments for this guest in this event (reassign)
+        var oldAssignments = _db.TblGuestAssignments
+            .Where(x => x.GuestId == guestId && x.EventId == eventId)
+            .ToList();
+        if (oldAssignments.Any())
+            _db.TblGuestAssignments.RemoveRange(oldAssignments);
+
+        var newAssignment = new TblGuestAssignment
+        {
+            GuestId = guestId,
+            TableId = tableId,
+            EventId = eventId,
+            RsvpStatus = "Pending",
+            IsCheckedIn = false,
+            CheckedInAt = null
+        };
+
+
+        //_db.Entry(newAssignment).State = EntityState.Modified;
+        _db.TblGuestAssignments.Add(newAssignment);
         _db.SaveChanges();
 
-        model = Result<TblGuest>.Success(item);
+        // Reload with navigation properties for DTO mapping
+        _db.Entry(newAssignment).Reference(a => a.Guest).Load();
+        _db.Entry(newAssignment).Reference(a => a.Event).Load();
+        _db.Entry(newAssignment).Reference(a => a.Table).Load();
+
+        var resultDto = MapToDto(newAssignment);
+
+        model = Result<GuestAssignmentDto>.Success(resultDto);
 
     Result:
         return model;
+    }
+
+    private GuestAssignmentDto MapToDto(TblGuestAssignment a)
+    {
+        return new GuestAssignmentDto
+        {
+            Id = a.Id,
+            GuestId = a.GuestId,
+            GuestName = a.Guest?.FullName ?? string.Empty,
+            EventId = a.EventId,
+            EventName = a.Event?.Name ?? string.Empty,
+            TableId = a.TableId,
+            TableName = a.Table?.Name ?? string.Empty,
+            RsvpStatus = a.RsvpStatus ?? "Pending",
+            IsCheckedIn = a.IsCheckedIn,
+            CheckedInAt = a.CheckedInAt
+        };
     }
 }
+
+
 enum RSVP
 {
     Pending,

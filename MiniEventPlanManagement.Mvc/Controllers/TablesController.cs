@@ -27,12 +27,12 @@ public class TablesController : Controller
         MessageModel model;
         try
         {
-            _tableService.CreateTable(new TblTable
+            var data = _tableService.CreateTable(new TblTable
             {
                 Name = requestModel.Name,
                 EventId = requestModel.EventId
             });
-            model = new MessageModel(true, "Table Created Successfully");
+            model = new MessageModel(true, "Table Created Successfully", data);
         }
         catch (Exception ex)
         {
