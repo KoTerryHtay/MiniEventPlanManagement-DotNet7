@@ -83,14 +83,15 @@ public class GuestService
         return model;
     }
 
-    public Result<List<GuestDto>> GetGuestsNotInTableByTableId(int tableId)
+    public Result<List<GuestDto>> GetGuestsNotInTableByEventId(int eventId)
     {
 
         Result<List<GuestDto>> model;
 
         var data = _db.TblGuests
             .AsNoTracking()
-            .Where(x => x.TblGuestAssignments.Any(a => a.TableId == tableId))
+            .Where(x => !x.TblGuestAssignments
+                 .Any(a => a.EventId == eventId))
             .Select(g => new GuestDto
             {
                 Id = g.Id,

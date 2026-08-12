@@ -1,16 +1,29 @@
-﻿<!-- Guest Table Section -->
+﻿<!-- Table Selection & Actions -->
 <div class="d-flex justify-content-between align-items-center mb-3">
-    <h4 id="guestListTitle" class="mb-0">All Guests</h4>
+    <div id="tablesContainer">
+        <button type="button" class="btn btn-outline-primary m-1 table-btn active"
+                data-table-id="all"
+                data-table-name="All Guests">
+            All Guests
+        </button>
+        <!-- Dynamic table buttons will be appended here -->
+    </div>
     <div>
-        <button type="button" class="btn btn-primary btn-sm" id="btnAssignGuest" style="display: none;">
+        <button id="btnAssignGuest" type="button" class="btn btn-primary me-2"
+                data-bs-toggle="modal"
+                data-bs-target="#assignGuestModal"
+                style="display: none;">
             + Assign Guest to this Table
         </button>
-        <button type="button" class="btn btn-success btn-sm" data-bs-toggle="modal" data-bs-target="#createGuestModal">
+        <button type="button" class="btn btn-success"
+                data-bs-toggle="modal"
+                data-bs-target="#createGuestModal">
             + Add Guest
         </button>
     </div>
 </div>
 
+<!-- Guest List Table -->
 <div class="table-responsive">
     <table class="table table-hover align-middle">
         <thead class="table-light">
@@ -19,58 +32,53 @@
                 <th>Name</th>
                 <th>Phone</th>
                 <th>RSVP Status</th>
-                <th>Check-In</th>
-                <th>Checked In At</th>
+                <th class="text-center">Check-In</th>
+                <th class="text-center">Checked In At</th>
             </tr>
         </thead>
         <tbody id="guestTableBody">
-            <!-- Rows will be rendered by JS -->
+            <tr><td colspan="6" class="text-center text-muted py-4">No guests found.</td></tr>
         </tbody>
     </table>
 </div>
 
 <!-- Create Guest Modal -->
-<div class="modal fade" id="createGuestModal" tabindex="-1">
+<div class="modal fade" id="createGuestModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title">Add New Guest</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                <div class="mb-3">
-                    <label class="form-label">Full Name</label>
-                    <input type="text" class="form-control" id="newGuestName" placeholder="Enter guest name">
-                </div>
+                <label for="newGuestName" class="form-label">Full Name</label>
+                <input type="text" id="newGuestName" class="form-control" placeholder="Enter guest name" />
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                <button type="button" class="btn btn-primary" id="btnSaveGuest">Save Guest</button>
+                <button type="button" id="btnSaveGuest" class="btn btn-primary">Save Guest</button>
             </div>
         </div>
     </div>
 </div>
 
 <!-- Assign Guest Modal -->
-<div class="modal fade" id="assignGuestModal" tabindex="-1">
+<div class="modal fade" id="assignGuestModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title">Assign Guest to Table</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                <div class="mb-3">
-                    <label class="form-label">Search and Select Guest</label>
-                    <!-- Value is now GuestId instead of Id -->
-                    <select class="form-select" id="guestSelectDropdown">
-                        <option value="">-- Loading... --</option>
-                    </select>
-                </div>
+                <label for="guestSelectDropdown" class="form-label">Search and Select Guest</label>
+                <select id="guestSelectDropdown" class="form-select" style="width: 100%;">
+                    <option value="">-- Loading... --</option>
+                </select>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                <button type="button" class="btn btn-primary" id="btnAssignGuestSave">Assign</button>
+                <button type="button" id="btnAssignGuestSave" class="btn btn-primary">Assign</button>
             </div>
         </div>
     </div>

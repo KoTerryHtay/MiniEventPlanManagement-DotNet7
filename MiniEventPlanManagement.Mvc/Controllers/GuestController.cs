@@ -77,11 +77,13 @@ public class GuestController : Controller
         return Json(model);
     }
 
-    [Route("/api/guests/check-table/{tableId:int}")]
-    public IActionResult GetGuestsNotInTableByTableId(int tableId)
+    [Route("/api/guests/check-event/{eventId:int}")]
+    public IActionResult GetGuestsNotInTableByTableId(int eventId)
     {
         MessageModel model;
-        var data = _guestService.GetGuestsNotInTableByTableId(tableId);
+        var data = _guestService.GetGuestsNotInTableByEventId(eventId);
+
+        Console.WriteLine(data.Data.Count);
 
         if (data.Data is null)
         {
@@ -100,7 +102,11 @@ public class GuestController : Controller
     public IActionResult UpdateRSVP(RsvpRequestModel requestModel)
     {
         MessageModel model;
-        var data = _guestService.UpdateGuestRsvp(requestModel.Id, requestModel.TableId, requestModel.RsvpStatus);
+
+        var data = _guestService
+            .UpdateGuestRsvp(requestModel.Id,
+                            requestModel.TableId,
+                            requestModel.RsvpStatus);
         if (data.IsSuccess is not true)
         {
             model = new MessageModel(false, "Something wrong");

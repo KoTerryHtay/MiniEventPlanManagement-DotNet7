@@ -84,7 +84,7 @@ $(document).ready(function () {
 
         console.log("#btnSaveTable >>>", { Name: tableName, EventId: eventId });
 
-        
+
         $.ajax({
             url: "/api/tables/create",
             type: "POST",
@@ -127,7 +127,7 @@ $(document).ready(function () {
                 } catch (e) { }
                 alert(msg);
             }
-        }); 
+        });
     });
 
     // ==========================================
@@ -141,7 +141,7 @@ $(document).ready(function () {
         }
 
         // TODO: Uncomment and adjust when API is ready
-        
+
         $.ajax({
             url: "/api/guests/create",
             type: "POST",
@@ -154,7 +154,7 @@ $(document).ready(function () {
             },
             error: function () { alert("Error creating guest."); }
         });
-        
+
     });
 
     // ==========================================
@@ -162,7 +162,7 @@ $(document).ready(function () {
     // ==========================================
     $('#assignGuestModal').on('shown.bs.modal', function () {
         if (currentSelectedTableId === "all") return;
-        console.log("on");
+        console.log("currentSelectedTableId >>>", { currentSelectedTableId, eventId });
 
         var $dropdown = $("#guestSelectDropdown");
         $dropdown.empty().append('<option value="">-- Loading... --</option>');
@@ -172,7 +172,7 @@ $(document).ready(function () {
         }
 
         $.ajax({
-            url: "/api/guests/check-table/" + currentSelectedTableId,
+            url: "/api/guests/check-event/" + eventId,
             type: "GET",
             success: function (response) {
                 console.log("/api/guests/check-table/ >>>", response);
@@ -214,14 +214,18 @@ $(document).ready(function () {
             alert("Please select a guest.");
             return;
         }
-
+        console.log("#btnAssignGuestSave >>>", {
+            Id: parseInt(guestId),
+            TableId: parseInt(currentSelectedTableId),
+            EventId: parseInt(eventId)
+        })
         // TODO: Uncomment when API is ready
-        /*
+
         $.ajax({
             url: "/api/guests/assign",
             type: "POST",
             data: {
-                GuestId: parseInt(guestId),      // Changed from Id to GuestId
+                Id: parseInt(guestId),      // Changed from Id to GuestId
                 TableId: parseInt(currentSelectedTableId),
                 EventId: parseInt(eventId)
             },
@@ -236,10 +240,11 @@ $(document).ready(function () {
                 renderGuestTable(filtered);
                 $('#assignGuestModal').modal('hide');
                 alert("Guest assigned successfully!");
+                window.location.href = `/events/${eventId}`;
             },
             error: function () { alert("Error assigning guest."); }
         });
-        */
+
     });
 
     // ==========================================
@@ -248,9 +253,36 @@ $(document).ready(function () {
     $(document).on("change", ".rsvp-select", function () {
         var guestId = $(this).data("guest-id");
         var newStatus = $(this).val();
+        var $select = $(this);
         var tableId = $(this).attr("data-table-id");
         console.log("RSVP Update:", { guestId, newStatus, tableId });
         // TODO: Add AJAX call
+        // Id, TableId, RsvpStatus
+
+        $.ajax({
+            url: "/api/guest/rsvp",
+            type: "POST",
+            data: {
+                // Id RsvpStatus TableId
+                Id: guestId,
+                RsvpStatus: newStatus,
+                TableId: tableId,
+            },
+            success: function (response) {
+                console.log("rsvp response >>>", response);
+                $select.addClass("border-success");
+                setTimeout(function () { $select.removeClass("border-success"); }, 1500);
+                // Update local data cache
+                var cached = $.grep(allGuests, function (g) { return g.id == guestId; })[0];
+                if (cached) cached.rsvpStatus = newStatus;
+                window.location.href = `/events/${eventId}`;
+            },
+            error: function (error) {
+                console.log(error);
+                alert("RSVP update လုပ်ရာတွင် အမှားရှိနေပါသည်။");
+            }
+        });
+
     });
 
     $(document).on("change", ".checkin-toggle", function () {
@@ -259,6 +291,10 @@ $(document).ready(function () {
         var $checkbox = $(this);
         var row = $checkbox.closest("tr");
         var timeCell = row.find(".checked-in-at-cell");
+        var tableId = $(this).data("table-id");
+
+        console.log(".checkin-toggle >>>",
+            { Id: guestId, IsCheckdIn: isCheckedIn, TableId: tableId });
 
         if (isCheckedIn) {
             row.addClass("table-success");
@@ -268,6 +304,49 @@ $(document).ready(function () {
             timeCell.text('-');
         }
         // TODO: Add AJAX call
+        $.ajax({
+            url: "/api/guest/checkin",
+            type: "POST",
+            data: {
+                // Id, TableId, IsCheckdIn
+                Id: guestId,
+                IsCheckdIn: isCheckedIn,
+                TableId: tableId
+            },
+            success: function (response) {
+                var row = $checkbox.closest("tr");
+                var timeCell = row.find("td:last");
+                // CheckedInAt column
+                console.log("checkin response >>>", response);
+
+                if (isCheckedIn) {
+                    row.addClass("table-success");
+                    // Update time immediately without page refresh
+                    var now = new Date().toLocaleString('en-US', {
+                        year: 'numeric', month: 'short', day: 'numeric',
+                        hour: '2-digit', minute: '2-digit'
+                    });
+                    timeCell.text(now);
+                } else {
+                    row.removeClass("table-success");
+                    timeCell.text('-');
+
+                }
+                // Update local data cache
+                var cached = $.grep(allGuests, function (g) { return g.id == guestId; })[0];
+                if (cached) {
+                    cached.isCheckdIn = isCheckedIn;
+                    cached.checkedInAt = isCheckedIn ? new Date().toISOString() : null;
+                }
+                window.location.href = `/events/${eventId}`;
+            },
+            error: function (error) {
+                console.log(error);
+                alert("Check-in update လုပ်ရာတွင် အမှားရှိနေပါသည်။");
+                $checkbox.prop("checked", !isCheckedIn);
+                // Revert on error
+            }
+        });
     });
 
     // ==========================================
