@@ -4,108 +4,157 @@
     ViewData["Title"] = "All Guests";
 }
 
-<div class="container mt-4">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2>All Guests</h2>
-        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createGuestModal">
-            + Create Guest
-        </button>
+<!-- Page Header & Actions -->
+<div class="flex flex-col md:flex-row justify-between items-center mb-8 gap-4">
+    <div>
+        <h1 class="text-3xl font-bold text-slate-800 tracking-tight">All Guests</h1>
+        <p class="text-slate-500 mt-1">Manage and track all event attendees</p>
     </div>
+    <button onclick="openGuestModal()"
+            class="inline-flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2.5 rounded-lg shadow-md transition-all duration-200 font-medium focus:ring-4 focus:ring-indigo-300">
+        <i class="fa-solid fa-plus"></i>
+        Create Guest
+    </button>
+</div>
 
-    <!-- Search Bar (Local Filter) -->
-    <div class="mb-3">
-        <input type="text" id="searchInput" class="form-control" placeholder="Search by Name, Phone, Event or Table...">
-    </div>
-
-    <!-- Guests Table -->
-    <div class="card">
-        <div class="card-body p-0">
-            <div class="table-responsive">
-                <table class="table table-bordered table-hover align-middle mb-0" id="guestTable">
-                    <thead class="table-light">
-                        <tr>
-                            <th style="width: 50px;">No.</th>
-                            <th>Guest Name</th>
-                            <th>Event</th>
-                            <th>Table</th>
-                            <th>RSVP Status</th>
-                            <th class="text-center">Check-In</th>
-                            <th>Checked In At</th>
-                        </tr>
-                    </thead>
-                    <tbody id="guestTableBody">
-                        @if (Model != null && Model.Any())
-                        {
-                            int count = 1;
-                            foreach (var guest in Model)
-                            {
-                                <tr>
-                                    <td>@count</td>
-                                    <td class="guest-name">@guest.GuestName</td>
-                                    <td class="event-name">@guest.EventName</td>
-                                    <td class="table-name">@guest.TableName</td>
-                                    <td>
-                                        <span class="badge @(guest.RsvpStatus == "Confirmed" ? "bg-success" : guest.RsvpStatus == "Pending" ? "bg-warning text-dark" : "bg-secondary")">
-                                            @guest.RsvpStatus
-                                        </span>
-                                    </td>
-                                    <td class="text-center">
-                                        @if (guest.IsCheckedIn)
-                                        {
-                                            <span class="badge bg-success">Checked In</span>
-                                        }
-                                        else
-                                        {
-                                            <span class="badge bg-light text-dark border">Not Yet</span>
-                                        }
-                                    </td>
-                                    <td>
-                                        @if (guest.CheckedInAt.HasValue)
-                                        {
-                                            @guest.CheckedInAt.Value.ToString("MMM dd, yyyy hh:mm tt")
-                                        }
-                                        else
-                                        {
-                                            <span>-</span>
-                                        }
-                                    </td>
-                                </tr>
-                                count++;
-                            }
-                        }
-                        else
-                        {
-                            <tr>
-                                <td colspan="8" class="text-center text-muted py-4">No guests found.</td>
-                            </tr>
-                        }
-                    </tbody>
-                </table>
-            </div>
-        </div>
+<!-- Stats / Filter Bar (Optional Placeholder for Search) -->
+<div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200 mb-6 flex items-center gap-3">
+    <div class="relative flex-1 max-w-md">
+        <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"></i>
+        <input type="text" id="searchInput" placeholder="Search guests by name, event or table..."
+               class="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all text-sm">
     </div>
 </div>
 
-<!-- Create Guest Modal -->
-<div class="modal fade" id="createGuestModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Create New Guest</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <div class="mb-3">
-                    <label for="newGuestName" class="form-label">Full Name</label>
-                    <input type="text" class="form-control" id="newGuestName" placeholder="Enter full name">
+<!-- Premium Data Table -->
+<div class="bg-white rounded-xl shadow-lg border border-slate-200 overflow-hidden">
+    <div class="overflow-x-auto">
+        <table class="w-full text-left border-collapse">
+            <thead>
+                <tr class="bg-slate-50 border-b border-slate-200 text-xs uppercase tracking-wider text-slate-500 font-semibold">
+                    <th class="px-6 py-4">#</th>
+                    <th class="px-6 py-4">Guest Name</th>
+                    <th class="px-6 py-4">Event</th>
+                    <th class="px-6 py-4">Table</th>
+                    <th class="px-6 py-4">RSVP Status</th>
+                    <th class="px-6 py-4 text-center">Check-In</th>
+                    <th class="px-6 py-4">Checked In At</th>
+                </tr>
+            </thead>
+            <tbody id="guestTableBody" class="divide-y divide-slate-100 text-sm text-slate-700">
+                @if (Model != null && Model.Any())
+                {
+                    int count = 1;
+                    foreach (var guest in Model)
+                    {
+                        <tr class="hover:bg-slate-50/80 transition-colors duration-150 group">
+                            <td class="px-6 py-4 font-medium text-slate-400">@count</td>
+                            <td class="px-6 py-4 font-semibold text-slate-800">@guest.GuestName</td>
+                            <td class="px-6 py-4">@guest.EventName</td>
+                            <td class="px-6 py-4">
+                                @if (!string.IsNullOrEmpty(guest.TableName))
+                                {
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-indigo-50 text-indigo-700 border border-indigo-100">
+                                        <i class="fa-solid fa-chair mr-1.5 text-[10px]"></i> @guest.TableName
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span class="text-slate-400 italic text-xs">Unassigned</span>
+                                }
+                            </td>
+                            <td class="px-6 py-4">
+                                @{
+                                    var rsvpClass = guest.RsvpStatus?.ToLower() switch
+                                    {
+                                        "confirmed" => "bg-emerald-50 text-emerald-700 border-emerald-200",
+                                        "declined" => "bg-rose-50 text-rose-700 border-rose-200",
+                                        "pending" => "bg-amber-50 text-amber-700 border-amber-200",
+                                        _ => "bg-slate-50 text-slate-600 border-slate-200"
+                                    };
+                                }
+                                <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold border @rsvpClass">
+                                    @guest.RsvpStatus
+                                </span>
+                            </td>
+                            <td class="px-6 py-4 text-center">
+                                @if (guest.IsCheckedIn)
+                                {
+                                    <span class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-emerald-100 text-emerald-600" title="Checked In">
+                                        <i class="fa-solid fa-check"></i>
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-slate-100 text-slate-400" title="Not Yet Checked In">
+                                        <i class="fa-regular fa-clock"></i>
+                                    </span>
+                                }
+                            </td>
+                            <td class="px-6 py-4 text-slate-500 tabular-nums">
+                                @(guest.CheckedInAt.HasValue? guest.CheckedInAt.Value.ToString("MMM dd, yyyy hh:mm tt") : "-")
+                            </td>
+                        </tr>
+                        count++;
+                    }
+                }
+                else
+                {
+                    <tr>
+                        <td colspan="7" class="px-6 py-16 text-center">
+                            <div class="flex flex-col items-center justify-center gap-3">
+                                <div class="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center text-slate-300 text-2xl">
+                                    <i class="fa-regular fa-face-frown"></i>
+                                </div>
+                                <p class="text-slate-500 font-medium">No guests found</p>
+                                <button onclick="openGuestModal()" class="text-indigo-600 hover:text-indigo-700 text-sm font-semibold mt-1">
+                                    Create your first guest &rarr;
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Create Guest Modal (Tailwind + SweetAlert2 Compatible Structure) -->
+<div id="guestModal" class="fixed inset-0 z-50 hidden" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+    <!-- Backdrop -->
+    <div class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm transition-opacity opacity-0" id="modalBackdrop"></div>
+
+    <!-- Modal Panel -->
+    <div class="fixed inset-0 z-10 overflow-y-auto">
+        <div class="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
+            <div class="relative transform overflow-hidden rounded-2xl bg-white text-left shadow-2xl transition-all sm:my-8 sm:w-full sm:max-w-lg opacity-0 scale-95" id="modalPanel">
+
+                <!-- Modal Header -->
+                <div class="bg-slate-50 px-6 py-4 border-b border-slate-100 flex justify-between items-center">
+                    <h3 class="text-lg font-bold text-slate-800" id="modal-title">Create New Guest</h3>
+                    <button onclick="closeGuestModal()" class="text-slate-400 hover:text-slate-600 transition-colors p-1 rounded-lg hover:bg-slate-100">
+                        <i class="fa-solid fa-xmark text-xl"></i>
+                    </button>
                 </div>
-                <!-- Note: API requires only FullName based on previous request. 
-                     If EventId is needed for assignment, logic might need adjustment, 
-                     but sticking to "/api/guests/create" with FullName only as requested. -->
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                <button type="button" class="btn btn-primary" id="btnSaveNewGuest">Save Guest</button>
+
+                <!-- Modal Body (Form Placeholder - Bind with your existing jQuery/AJAX) -->
+                <div class="px-6 py-6 space-y-4">
+                    <div>
+                        <label class="block text-sm font-semibold text-slate-700 mb-1.5">Full Name</label>
+                        <input type="text" id="guestNameInput" class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all text-sm" placeholder="Enter guest full name">
+                    </div>
+                    <!-- Add other form fields here matching your existing AJAX payload -->
+                </div>
+
+                <!-- Modal Footer -->
+                <div class="bg-slate-50 px-6 py-4 border-t border-slate-100 flex justify-end gap-3">
+                    <button onclick="closeGuestModal()" class="px-4 py-2.5 text-sm font-medium text-slate-600 bg-white border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors focus:ring-2 focus:ring-slate-200">
+                        Close
+                    </button>
+                    <button id="saveGuestBtn" class="px-5 py-2.5 text-sm font-medium text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 shadow-md shadow-indigo-200 transition-all focus:ring-4 focus:ring-indigo-300">
+                        Save Guest
+                    </button>
+                </div>
             </div>
         </div>
     </div>
@@ -113,24 +162,61 @@
 
 @section Scripts {
     <script>
+        // ✅ FIXED: Functions are now GLOBAL so onclick="openGuestModal()" works
+        const modal = document.getElementById('guestModal');
+        const backdrop = document.getElementById('modalBackdrop');
+        const panel = document.getElementById('modalPanel');
+
+        function openGuestModal() {
+            if (!modal || !backdrop || !panel) return;
+            modal.classList.remove('hidden');
+            requestAnimationFrame(() => {
+                backdrop.classList.remove('opacity-0');
+                panel.classList.remove('opacity-0', 'scale-95');
+                panel.classList.add('opacity-100', 'scale-100');
+            });
+        }
+
+        function closeGuestModal() {
+            if (!modal || !backdrop || !panel) return;
+            backdrop.classList.add('opacity-0');
+            panel.classList.remove('opacity-100', 'scale-100');
+            panel.classList.add('opacity-0', 'scale-95');
+            setTimeout(() => modal.classList.add('hidden'), 300);
+        }
+
+        if (backdrop) backdrop.addEventListener('click', closeGuestModal);
+        {
+            document.addEventListener('keydown', (e) => {
+                if (e.key === "Escape" && !modal.classList.contains('hidden')) closeGuestModal();
+            });
+        }
+
+        // Close on backdrop click
+        backdrop.addEventListener('click', closeGuestModal);
+
+
         $(document).ready(function () {
+
             // ==========================================
-            // 1. Local Search / Filter Logic
+            // 1. Local Search / Filter Logic (FIXED)
             // ==========================================
             $("#searchInput").on("keyup", function () {
                 var value = $(this).val().toLowerCase();
+                $("#guestTableBody tr").each(function () {
+                    // Empty state row ကို filter မထုတ်မိစေရန် skip လုပ်ပါ
+                    if ($(this).find('td[colspan]').length) return;
 
-                $("#guestTableBody tr").filter(function () {
-                    // Hide row if text not found, show if found
-                    $(this).toggle($(this).text().toLowerCase().indexOf(value) > -1);
+                    var rowText = $(this).text().toLowerCase();
+                    $(this).toggle(rowText.indexOf(value) > -1);
                 });
             });
 
             // ==========================================
             // 2. Create Guest Logic (API Call)
             // ==========================================
-            $("#btnSaveNewGuest").click(function () {
-                var fullName = $("#newGuestName").val().trim();
+            $("#saveGuestBtn").click(function () {
+                var fullName = $("#guestNameInput").val().trim();
 
                 if (!fullName) {
                     alert("Please enter guest name.");
@@ -145,12 +231,14 @@
                     type: "POST",
                     data: { FullName: fullName },
                     success: function (response) {
-                        alert("Guest created successfully!");
-                        
-                        // Reload page to see the new guest in the list
-                        // Since we are using Server-Side Rendering for the list, 
-                        // reloading is the easiest way to update the UI consistently.
-                        window.location.reload(); 
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Guest Created!',
+                            text: 'The guest has been added successfully.',
+                            confirmButtonColor: '#4f46e5',
+                            timer: 2000,
+                            showConfirmButton: false
+                        }).then(() => location.reload());
                     },
                     error: function (error) {
                         console.log(error);

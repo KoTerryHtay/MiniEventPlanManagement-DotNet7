@@ -2,10 +2,68 @@
     ViewData["Title"] = "Home Page";
 }
 
-<div class="text-center">
-    <h1 class="display-4 btn btn-secondary">Welcome</h1>
-    <h1 class="text-3xl font-bold underline bg-sky-950">
-        Hello world!
+<div class="flex flex-col items-center justify-center py-16 sm:py-24 text-center max-w-3xl mx-auto px-4">
+    <!-- Hero Badge -->
+    <div class="inline-flex items-center rounded-full bg-indigo-50 px-4 py-1.5 text-sm font-medium text-indigo-700 ring-1 ring-inset ring-indigo-700/10 mb-8">
+        🚀 Mini Event Plan Management v2.0
+    </div>
+
+    <!-- Main Heading -->
+    <h1 class="text-4xl font-extrabold tracking-tight text-gray-900 sm:text-6xl mb-6">
+        Welcome to Your
+        <span class="text-indigo-600">Event Dashboard</span>
     </h1>
-    <p>Learn about <a href="https://docs.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+
+    <!-- Subtitle -->
+    <p class="mt-4 text-lg leading-8 text-gray-600 max-w-2xl mx-auto mb-10">
+        Manage your events, tables, and guests with a modern premium interface.
+        Streamline RSVP tracking and check-ins effortlessly.
+    </p>
+
+    <!-- CTA Buttons -->
+    <div class="flex flex-col sm:flex-row gap-4 justify-center items-center w-full sm:w-auto">
+        <a href="/events"
+           class="w-full sm:w-auto inline-flex items-center justify-center rounded-xl bg-indigo-600 px-8 py-3.5 text-base font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 transition-all duration-200">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2" /><line x1="16" y1="2" x2="16" y2="6" /><line x1="8" y1="2" x2="8" y2="6" /><line x1="3" y1="10" x2="21" y2="10" /></svg>
+            Go to Events
+        </a>
+
+        <a href="/guests"
+           class="w-full sm:w-auto inline-flex items-center justify-center rounded-xl bg-white px-8 py-3.5 text-base font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 transition-all duration-200">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-2">
+                <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+                <circle cx="9" cy="7" r="4" />
+                <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
+                <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+            </svg>
+            View All Guests
+        </a>
+    </div>
+
+    <!-- Feature Highlights Grid -->
+    <div class="mt-16 grid grid-cols-1 gap-6 sm:grid-cols-3 w-full text-left">
+        <div class="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-gray-200">
+            <div class="w-10 h-10 rounded-lg bg-indigo-100 flex items-center justify-center text-indigo-600 mb-4">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M23 21v-2a4 4 0 0 0-3-3.87" /><path d="M16 3.13a4 4 0 0 1 0 7.75" /></svg>
+            </div>
+            <h3 class="text-base font-semibold text-gray-900">Guest Management</h3>
+            <p class="mt-2 text-sm text-gray-500">Create, assign, and track all your event guests in one place.</p>
+        </div>
+
+        <div class="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-gray-200">
+            <div class="w-10 h-10 rounded-lg bg-emerald-100 flex items-center justify-center text-emerald-600 mb-4">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 11 12 14 22 4" /><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" /></svg>
+            </div>
+            <h3 class="text-base font-semibold text-gray-900">RSVP Tracking</h3>
+            <p class="mt-2 text-sm text-gray-500">Real-time RSVP status updates with instant visual feedback.</p>
+        </div>
+
+        <div class="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-gray-200">
+            <div class="w-10 h-10 rounded-lg bg-amber-100 flex items-center justify-center text-amber-600 mb-4">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2" /><line x1="16" y1="2" x2="16" y2="6" /><line x1="8" y1="2" x2="8" y2="6" /><line x1="3" y1="10" x2="21" y2="10" /></svg>
+            </div>
+            <h3 class="text-base font-semibold text-gray-900">Table Planning</h3>
+            <p class="mt-2 text-sm text-gray-500">Organize seating arrangements with drag-and-drop simplicity.</p>
+        </div>
+    </div>
 </div>

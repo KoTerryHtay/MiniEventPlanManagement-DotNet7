@@ -1,85 +1,117 @@
 ﻿<!-- Table Selection & Actions -->
-<div class="d-flex justify-content-between align-items-center mb-3">
-    <div id="tablesContainer">
-        <button type="button" class="btn btn-outline-primary m-1 table-btn active"
+<div class="flex flex-col sm:flex-row justify-between items-center gap-4 mb-6">
+    <!-- Table Buttons Container -->
+    <div id="tablesContainer" class="flex flex-wrap gap-2 w-full sm:w-auto">
+        <button type="button"
+                class="table-btn active px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 bg-indigo-600 text-white shadow-md ring-2 ring-indigo-600 ring-offset-2"
                 data-table-id="all"
                 data-table-name="All Guests">
             All Guests
         </button>
-        <!-- Dynamic table buttons will be appended here -->
+        <!-- Dynamic table buttons will be appended here via JS -->
     </div>
-    <div>
-        <button id="btnAssignGuest" type="button" class="btn btn-primary me-2"
-                data-bs-toggle="modal"
-                data-bs-target="#assignGuestModal"
-                style="display: none;">
-            + Assign Guest to this Table
+
+    <!-- Action Buttons -->
+    <div class="flex gap-3 w-full sm:w-auto">
+        <button id="btnAssignGuest" type="button"
+                class="hidden px-4 py-2 bg-white border border-gray-300 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-50 transition-colors shadow-sm flex items-center gap-2"
+                onclick="openModal('assignGuestModal')">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><line x1="19" y1="8" x2="19" y2="14" /><line x1="22" y1="11" x2="16" y2="11" /></svg>
+            Assign Guest
         </button>
-        <button type="button" class="btn btn-success"
-                data-bs-toggle="modal"
-                data-bs-target="#createGuestModal">
-            + Add Guest
+
+        <button type="button"
+                class="px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm font-medium hover:bg-indigo-700 transition-colors shadow-md shadow-indigo-200 flex items-center gap-2"
+                onclick="openModal('createGuestModal')">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" /></svg>
+            Add Guest
         </button>
     </div>
 </div>
 
-<!-- Guest List Table -->
-<div class="table-responsive">
-    <table class="table table-hover align-middle">
-        <thead class="table-light">
-            <tr>
-                <th>No.</th>
-                <th>Name</th>
-                <th>Phone</th>
-                <th>RSVP Status</th>
-                <th class="text-center">Check-In</th>
-                <th class="text-center">Checked In At</th>
-            </tr>
-        </thead>
-        <tbody id="guestTableBody">
-            <tr><td colspan="6" class="text-center text-muted py-4">No guests found.</td></tr>
-        </tbody>
-    </table>
+<!-- Guest List Table Card -->
+<div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+    <div class="overflow-x-auto">
+        <table class="w-full text-left border-collapse">
+            <thead class="bg-gray-50 border-b border-gray-200">
+                <tr>
+                    <th class="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">No.</th>
+                    <th class="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Name</th>
+                    <th class="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Phone</th>
+                    <th class="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">RSVP Status</th>
+                    <th class="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider text-center">Check-In</th>
+                    <th class="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider text-center">Checked In At</th>
+                </tr>
+            </thead>
+            <tbody id="guestTableBody" class="divide-y divide-gray-100">
+                <tr>
+                    <td colspan="6" class="px-6 py-12 text-center text-gray-400 text-sm">
+                        No guests found.
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
 </div>
 
-<!-- Create Guest Modal -->
-<div class="modal fade" id="createGuestModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Add New Guest</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <label for="newGuestName" class="form-label">Full Name</label>
-                <input type="text" id="newGuestName" class="form-control" placeholder="Enter guest name" />
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                <button type="button" id="btnSaveGuest" class="btn btn-primary">Save Guest</button>
+<!-- Create Guest Modal (Tailwind Native) -->
+<div id="createGuestModal" class="fixed inset-0 z-50 hidden" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+    <div class="fixed inset-0 bg-gray-900/50 backdrop-blur-sm transition-opacity" onclick="closeModal('createGuestModal')"></div>
+    <div class="fixed inset-0 z-10 overflow-y-auto">
+        <div class="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
+            <div class="relative transform overflow-hidden rounded-2xl bg-white text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg">
+                <div class="bg-white px-4 pb-4 pt-5 sm:p-6 sm:pb-4">
+                    <h3 class="text-lg font-semibold leading-6 text-gray-900 mb-4" id="modal-title">Add New Guest</h3>
+                    <div class="mt-2">
+                        <label for="newGuestName" class="block text-sm font-medium leading-6 text-gray-900 mb-1">Full Name</label>
+                        <input type="text" id="newGuestName" class="block w-full rounded-lg border-0 py-2.5 px-3 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6" placeholder="Enter guest name" />
+                    </div>
+                </div>
+                <div class="bg-gray-50 px-4 py-3 sm:flex sm:flex-row-reverse sm:px-6 gap-2">
+                    <button type="button" id="btnSaveGuest" class="inline-flex w-full justify-center rounded-lg bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 sm:ml-3 sm:w-auto transition-colors">Save Guest</button>
+                    <button type="button" class="mt-3 inline-flex w-full justify-center rounded-lg bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 sm:mt-0 sm:w-auto transition-colors" onclick="closeModal('createGuestModal')">Cancel</button>
+                </div>
             </div>
         </div>
     </div>
 </div>
 
-<!-- Assign Guest Modal -->
-<div class="modal fade" id="assignGuestModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Assign Guest to Table</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <label for="guestSelectDropdown" class="form-label">Search and Select Guest</label>
-                <select id="guestSelectDropdown" class="form-select" style="width: 100%;">
-                    <option value="">-- Loading... --</option>
-                </select>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                <button type="button" id="btnAssignGuestSave" class="btn btn-primary">Assign</button>
+<!-- Assign Guest Modal (Tailwind Native) -->
+<div id="assignGuestModal" class="fixed inset-0 z-50 hidden" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+    <div class="fixed inset-0 bg-gray-900/50 backdrop-blur-sm transition-opacity" onclick="closeModal('assignGuestModal')"></div>
+    <div class="fixed inset-0 z-10 overflow-y-auto">
+        <div class="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
+            <div class="relative transform overflow-hidden rounded-2xl bg-white text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg">
+                <div class="bg-white px-4 pb-4 pt-5 sm:p-6 sm:pb-4">
+                    <h3 class="text-lg font-semibold leading-6 text-gray-900 mb-4">Assign Guest to Table</h3>
+                    <div class="mt-2">
+                        <label for="guestSelectDropdown" class="block text-sm font-medium leading-6 text-gray-900 mb-1">Search and Select Guest</label>
+                        <select id="guestSelectDropdown" class="block w-full rounded-lg border-0 py-2.5 px-3 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6" style="width: 100%;">
+                            <option value="">-- Loading... --</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="bg-gray-50 px-4 py-3 sm:flex sm:flex-row-reverse sm:px-6 gap-2">
+                    <button type="button" id="btnAssignGuestSave" class="inline-flex w-full justify-center rounded-lg bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 sm:ml-3 sm:w-auto transition-colors">Assign</button>
+                    <button type="button" class="mt-3 inline-flex w-full justify-center rounded-lg bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 sm:mt-0 sm:w-auto transition-colors" onclick="closeModal('assignGuestModal')">Cancel</button>
+                </div>
             </div>
         </div>
     </div>
 </div>
+
+<!-- Simple Modal Helper Script (Since we removed Bootstrap JS dependency for modals) -->
+<script>
+    function openModal(modalId) {
+        const modal = document.getElementById(modalId);
+        if(modal) {
+            modal.classList.remove('hidden');
+            // Trigger shown.bs.modal equivalent event manually if needed for Select2 init
+            $(modal).trigger('shown.bs.modal');
+        }
+    }
+    function closeModal(modalId) {
+        const modal = document.getElementById(modalId);
+        if(modal) modal.classList.add('hidden');
+    }
+</script>

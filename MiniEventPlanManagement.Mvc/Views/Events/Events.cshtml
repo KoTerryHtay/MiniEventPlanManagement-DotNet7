@@ -1,37 +1,99 @@
 ﻿@model List<TblEvent>
+
 @{
     ViewData["Title"] = "All Events";
 }
 
-<h1>All Events</h1>
+<!-- Page Header -->
+<div class="flex flex-col md:flex-row justify-between items-center mb-8 gap-4">
+    <div>
+        <h1 class="text-3xl font-bold text-slate-800 tracking-tight">All Events</h1>
+        <p class="text-slate-500 mt-1">Manage your events and schedules</p>
+    </div>
+    <a href="/events/new"
+       class="inline-flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2.5 rounded-lg shadow-md transition-all duration-200 font-medium focus:ring-4 focus:ring-indigo-300 no-underline">
+        <i class="fa-solid fa-plus"></i>
+        Create New Event
+    </a>
+</div>
 
-<a href="/events/new" class="btn btn-outline-success">Create New Event</a>
+<!-- Search Bar -->
+<div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200 mb-6 flex items-center gap-3">
+    <div class="relative flex-1 max-w-md">
+        <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"></i>
+        <input type="text" id="eventSearchInput" placeholder="Search events by name..."
+               class="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all text-sm">
+    </div>
+</div>
 
-@*  public int Id { get; set; }
-    public string Name { get; set; } = null!;
-    public DateTime EventDate { get; set; } *@
+<!-- Premium Data Table -->
+<div class="bg-white rounded-xl shadow-lg border border-slate-200 overflow-hidden">
+    <div class="overflow-x-auto">
+        <table class="w-full text-left border-collapse">
+            <thead>
+                <tr class="bg-slate-50 border-b border-slate-200 text-xs uppercase tracking-wider text-slate-500 font-semibold">
+                    <th class="px-6 py-4 w-20">ID</th>
+                    <th class="px-6 py-4">Event Name</th>
+                    <th class="px-6 py-4">Event Date</th>
+                    <th class="px-6 py-4">Actions</th>
+                </tr>
+            </thead>
+            <tbody id="eventTableBody" class="divide-y divide-slate-100 text-sm text-slate-700">
+                @if (Model != null && Model.Any())
+                {
+                    foreach (var eventData in Model)
+                    {
+                        <tr class="hover:bg-slate-50/80 transition-colors duration-150 group">
+                            <td class="px-6 py-4 font-mono text-slate-400 text-xs">@eventData.Id</td>
+                            <td class="px-6 py-4 font-semibold text-slate-800">@eventData.Name</td>
+                            <td class="px-6 py-4 tabular-nums text-slate-600">
+                                <i class="fa-regular fa-calendar mr-1.5 text-slate-400"></i>
+                                @eventData.EventDate.ToString("MMM dd, yyyy")
+                            </td>
+                            <td class="px-6 py-4">
+                                <a href="/events/@eventData.Id"
+                                   class="inline-flex items-center gap-1.5 text-indigo-600 hover:text-indigo-800 font-medium text-sm transition-colors no-underline">
+                                    <i class="fa-solid fa-arrow-right-to-bracket"></i>
+                                    Detail
+                                </a>
+                            </td>
+                        </tr>
+                    }
+                }
+                else
+                {
+                    <tr>
+                        <td colspan="4" class="px-6 py-16 text-center">
+                            <div class="flex flex-col items-center justify-center gap-3">
+                                <div class="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center text-slate-300 text-2xl">
+                                    <i class="fa-regular fa-calendar-xmark"></i>
+                                </div>
+                                <p class="text-slate-500 font-medium">No events found</p>
+                                <a href="/events/new" class="text-indigo-600 hover:text-indigo-700 text-sm font-semibold mt-1 no-underline">
+                                    Create your first event &rarr;
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
 
-<table class="table table-responsive">
-    <thead>
-        <tr>
-            <th>Event Id</th>
-            <th>Event Name</th>
-            <th>Event Date</th>
-            <th>Details</th>
-        </tr>
-    </thead>
-    <tbody>
-        @for (int i = 0; i < Model.Count; i++)
-        {
-            var eventData = Model[i];
-            <tr>
-                <td>@eventData.Id</td>
-                <td>@eventData.Name</td>
-                <td>@eventData.EventDate</td>
-                <td>
-                    <a href="/events/@eventData.Id">Detail</a>
-                </td>
-            </tr>
-        }
-    </tbody>
-</table>
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+            // Local Search / Filter Logic for Events
+            $("#eventSearchInput").on("keyup", function () {
+                var value = $(this).val().toLowerCase();
+                // console.log("value >>>",value);
+                $("#eventTableBody tr").each(function () {
+                    if ($(this).find('td[colspan]').length) return; // Skip empty state row
+                    var rowText = $(this).text().toLowerCase();
+                    $(this).toggle(rowText.indexOf(value) > -1);
+                });
+            });
+        });
+    </script>
+}

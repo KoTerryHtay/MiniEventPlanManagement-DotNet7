@@ -1,22 +1,53 @@
 ﻿@{
     ViewData["Title"] = "Create Event";
 }
-@* public string Name { get; set; } public DateTime EventDate { get; set; } *@
-<div class="mb-3">
-    <label for="name" class="form-label">Event Name</label>
-    <input type="text" class="form-control" id="name" />
+
+<div class="min-h-[calc(100vh-8rem)]">
+    <!-- Page Header -->
+    <div class="mb-8">
+        <h1 class="text-3xl font-bold text-slate-800 tracking-tight">Create New Event</h1>
+        <p class="text-slate-500 mt-1">Fill in the details below to create a new event</p>
+    </div>
+
+    <!-- Form Card -->
+    <div class="bg-white rounded-xl shadow-lg border border-slate-200 overflow-hidden max-w-2xl">
+        <div class="px-6 py-6 space-y-5">
+            <!-- Event Name -->
+            <div>
+                <label for="name" class="block text-sm font-semibold text-slate-700 mb-1.5">Event Name</label>
+                <input type="text" id="name"
+                       class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all text-sm"
+                       placeholder="e.g. Annual Company Gala">
+            </div>
+
+            <!-- Event Date -->
+            <div>
+                <label for="datetime" class="block text-sm font-semibold text-slate-700 mb-1.5">Event Date & Time</label>
+                <input type="datetime-local" id="datetime"
+                       class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all text-sm text-slate-600">
+            </div>
+        </div>
+
+        <!-- Form Footer / Actions -->
+        <div class="bg-slate-50 px-6 py-4 border-t border-slate-100 flex justify-end gap-3">
+            <button type="button" id="btnCancel"
+                    class="px-4 py-2.5 text-sm font-medium text-slate-600 bg-white border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors focus:ring-2 focus:ring-slate-200">
+                Cancel
+            </button>
+            <button type="button" id="btnSave"
+                    class="px-5 py-2.5 text-sm font-medium text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 shadow-md shadow-indigo-200 transition-all focus:ring-4 focus:ring-indigo-300">
+                <i class="fa-solid fa-check mr-1.5"></i> Create Event
+            </button>
+        </div>
+    </div>
 </div>
-<div class="mb-3">
-    <label for="datetime" class="form-label">Event Date</label>
-    <input type="datetime-local" class="form-control" id="datetime" />
-</div>
-<button type="button" id="btnCancel" class="btn btn-secondary">
-    Cancel
-</button>
-<button type="button" id="btnSave" class="btn btn-success">Create</button>
 
 @section scripts {
     <script>
+        $("#btnCancel").click(function () {
+            location.href = "/events";
+        });
+
         $("#btnSave").click(function(){
             const name = $("#name").val();
             const datetime = $("#datetime").val();
@@ -33,13 +64,19 @@
                 success: function(response){
                    // {IsSuccess: true, Message: "Events Created Successfully"}
                     console.log(response);
-                    if(!response.IsSuccess){
-                        alert(response.Message);
+                    if(response.IsSuccess){
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Event Created!',
+                            text: 'The event has been created successfully.',
+                            confirmButtonColor: '#4f46e5',
+                            timer: 2000,
+                            showConfirmButton: false
+                        }).then(() =>{
+                            location.href = "/events";
+                        });
                         return;
                     }
-
-                    alert(response.Message);
-                    location.href = "/events";
                 },
                 error: function(error){
                     console.log(error);

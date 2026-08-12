@@ -4,10 +4,25 @@
     ViewData["Title"] = "Event Details";
 }
 
-<div class="container mt-4">
-    <partial name="Partials/_EventHeader" model="Model" />
-    <partial name="Partials/_TableButtons" model="Model.Tables" />
-    <partial name="Partials/_GuestTable" />
+<!-- Page Container with Proper Spacing -->
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
+
+    <!-- Event Header Card -->
+    <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+        <partial name="Partials/_EventHeader" model="Model" />
+    </div>
+
+    <!-- Table Buttons Section -->
+    <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-5">
+        <partial name="Partials/_TableButtons" model="Model.Tables" />
+    </div>
+
+    <!-- Guest Table Section -->
+    <div class="bg-white rounded-xl shadow-lg border border-slate-200 overflow-hidden p-5 mx-4">
+        <partial name="Partials/_GuestTable" />
+    </div>
+
+    <!-- Hidden Field for Current Event ID -->
     <input type="hidden" id="currentEventId" value="@Model.Id" />
 </div>
 
