@@ -1,6 +1,6 @@
 ﻿using MiniEventPlanManagement.Database.Models;
 
-namespace MiniEventPlanManagement.Domain.Models.Dto.Event;
+namespace MiniEventPlanManagement.Domain.Models.Dto;
 
 public class EventDto
 {

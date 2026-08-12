@@ -1,6 +1,6 @@
 ﻿using MiniEventPlanManagement.Database.Models;
 
-namespace MiniEventPlanManagement.Domain.Models.Dto.Event;
+namespace MiniEventPlanManagement.Domain.Models.Dto;
 
 public class GuestDto
 {
@@ -10,9 +10,6 @@ public class GuestDto
 
     public string? Phone { get; set; }
 
-    public string RsvpStatus { get; set; } = null!;
+    public List<GuestAssignmentDto> GuestAssignments { get; set; } = new();
 
-    public bool IsCheckdIn { get; set; }
-
-    public DateTime? CheckedInAt { get; set; }
 }
